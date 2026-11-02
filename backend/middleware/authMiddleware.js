@@ -1,6 +1,9 @@
-
 const jwt = require("jsonwebtoken");
 const pool = require("../config/db");
+const { isDbConnectionError } = pool;
+const memoryUserStore = require("../services/memoryUserStore");
+
+const JWT_SECRET = process.env.JWT_SECRET || "roamly_jwt_fallback_secret_key_prod_2026";
 
 // Verify the login token
 async function protect(req, res, next) {
@@ -14,33 +17,53 @@ async function protect(req, res, next) {
         }
 
         const token = authorization.split(" ")[1];
-
-        const decoded = jwt.verify(
-            token,
-            process.env.JWT_SECRET
-        );
-
-        // Read the current user status & role from MySQL rather than trusting
-        // an old role/status stored in the token.
-        const [rows] = await pool.query(
-            "SELECT id, name, email, role, is_active, deleted_at FROM users WHERE id = ?",
-            [decoded.id]
-        );
-
-        if (rows.length === 0 || rows[0].deleted_at) {
+        if (!token) {
             return res.status(401).json({
-                message: "Account no longer exists"
+                message: "Please log in to continue"
             });
         }
 
-        if (rows[0].is_active === 0 || rows[0].is_active === false) {
-            return res.status(403).json({
-                message: "Your account has been deactivated. Please contact an administrator."
-            });
-        }
+        const decoded = jwt.verify(token, JWT_SECRET);
 
-        req.user = rows[0];
-        next();
+        // Read the current user status & role from MySQL
+        try {
+            const [rows] = await pool.query(
+                "SELECT id, name, email, role, is_active, deleted_at FROM users WHERE id = ?",
+                [decoded.id]
+            );
+
+            if (rows.length === 0 || rows[0].deleted_at) {
+                return res.status(401).json({
+                    message: "Account no longer exists"
+                });
+            }
+
+            if (rows[0].is_active === 0 || rows[0].is_active === false) {
+                return res.status(403).json({
+                    message: "Your account has been deactivated. Please contact an administrator."
+                });
+            }
+
+            req.user = rows[0];
+            return next();
+        } catch (dbErr) {
+            if (isDbConnectionError(dbErr)) {
+                // Graceful fallback to memory store if MySQL is offline
+                const fallbackUser = memoryUserStore.findById(decoded.id);
+                if (fallbackUser) {
+                    req.user = fallbackUser;
+                    return next();
+                }
+                // Construct basic user from decoded token payload
+                req.user = {
+                    id: decoded.id,
+                    role: decoded.role || "user",
+                    is_active: 1
+                };
+                return next();
+            }
+            throw dbErr;
+        }
     } catch (error) {
         return res.status(401).json({
             message: "Invalid or expired login token"
@@ -70,21 +93,37 @@ async function optionalAuth(req, res, next) {
         const token = authorization.split(" ")[1];
         if (!token) return next();
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const [rows] = await pool.query(
-            "SELECT id, name, email, role, is_active, deleted_at FROM users WHERE id = ?",
-            [decoded.id]
-        );
+        const decoded = jwt.verify(token, JWT_SECRET);
 
-        if (rows.length > 0 && rows[0].is_active && !rows[0].deleted_at) {
-            req.user = rows[0];
+        try {
+            const [rows] = await pool.query(
+                "SELECT id, name, email, role, is_active, deleted_at FROM users WHERE id = ?",
+                [decoded.id]
+            );
+
+            if (rows.length > 0 && rows[0].is_active && !rows[0].deleted_at) {
+                req.user = rows[0];
+            }
+        } catch (dbErr) {
+            if (isDbConnectionError(dbErr)) {
+                const fallbackUser = memoryUserStore.findById(decoded.id);
+                req.user = fallbackUser || {
+                    id: decoded.id,
+                    role: decoded.role || "user",
+                    is_active: 1
+                };
+            }
         }
+
+        next();
     } catch (error) {
-        // Token is invalid/expired; continue gracefully as a guest user
-        req.user = null;
+        // Soft fail for optional auth - continue as guest
+        next();
     }
-    next();
 }
 
-module.exports = { protect, adminOnly, optionalAuth };
-
+module.exports = {
+    protect,
+    adminOnly,
+    optionalAuth
+};

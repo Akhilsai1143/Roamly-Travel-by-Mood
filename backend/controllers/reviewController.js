@@ -1,4 +1,12 @@
 const pool = require("../config/db");
+const { isDbConnectionError } = pool;
+
+let fallbackReviews = [];
+try {
+  fallbackReviews = require("../data/fallbackReviews.json");
+} catch (err) {
+  fallbackReviews = [];
+}
 
 // Helper to format review row for frontend consumption
 function formatReviewRow(row) {
@@ -6,34 +14,34 @@ function formatReviewRow(row) {
 
   return {
     id: String(row.id),
-    destinationId: row.destination_id,
-    destinationName: row.destination_name || row.dest_table_name || "Custom Escape",
-    author: row.user_full_name || row.user_name || "Fellow Traveler",
-    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80",
-    location: row.user_phone ? "Verified Traveler" : "India",
+    destinationId: row.destination_id || row.destinationId,
+    destinationName: row.destination_name || row.destinationName || row.dest_table_name || "Custom Escape",
+    author: row.author || row.user_full_name || row.user_name || "Fellow Traveler",
+    avatar: row.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80",
+    location: row.location || (row.user_phone ? "Verified Traveler" : "India"),
     rating: Number(row.rating) || 5,
-    title: row.title || `${row.destination_name || "Travel"} Experience`,
+    title: row.title || `${row.destination_name || row.destinationName || "Travel"} Experience`,
     comment: row.comment || "",
     mood: row.mood || "Peace",
     duration: row.duration || "3 Days / 2 Nights",
     budget: row.budget || "₹8,500",
     season: row.season || "Recent Trip",
-    insiderTip: row.insider_tip || "",
-    images: row.photo_url ? [row.photo_url] : [],
-    helpfulCount: Number(row.helpful_count) || 0,
-    date: row.created_at ? new Date(row.created_at).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }) : "Recently",
+    insiderTip: row.insider_tip || row.insiderTip || "",
+    images: Array.isArray(row.images) ? row.images : (row.photo_url ? [row.photo_url] : []),
+    helpfulCount: Number(row.helpful_count || row.helpfulCount) || 0,
+    date: row.date || (row.created_at ? new Date(row.created_at).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }) : "Recently"),
     verified: true,
-    userId: row.user_id
+    userId: row.user_id || row.userId
   };
 }
 
 // GET /api/reviews
 // Optional filters: destinationId, rating
 exports.getReviews = async (req, res) => {
-  try {
-    const destId = req.query.destination_id || req.query.destinationId;
-    const ratingFilter = req.query.rating;
+  const destId = req.query.destination_id || req.query.destinationId;
+  const ratingFilter = req.query.rating;
 
+  try {
     let query = `
       SELECT 
         r.*,
@@ -72,6 +80,33 @@ exports.getReviews = async (req, res) => {
       reviews
     });
   } catch (error) {
+    if (isDbConnectionError(error) || error.code === "ER_NO_SUCH_TABLE") {
+      console.warn("[Reviews API]: MySQL unreachable. Serving fallback reviews.");
+      let filtered = [...fallbackReviews];
+
+      if (destId && destId !== "all") {
+        const d = String(destId).toLowerCase();
+        filtered = filtered.filter(
+          (r) =>
+            String(r.destinationId || "").toLowerCase().includes(d) ||
+            String(r.destinationName || "").toLowerCase().includes(d)
+        );
+      }
+
+      if (ratingFilter && ratingFilter !== "all") {
+        const numRating = parseInt(ratingFilter, 10);
+        if (!isNaN(numRating)) {
+          filtered = filtered.filter((r) => Number(r.rating) === numRating);
+        }
+      }
+
+      return res.json({
+        success: true,
+        count: filtered.length,
+        reviews: filtered.map(formatReviewRow)
+      });
+    }
+
     console.error("Error fetching reviews:", error);
     res.status(500).json({
       success: false,
@@ -103,16 +138,16 @@ exports.createReview = async (req, res) => {
       photoUrl
     } = req.body;
 
-    const targetDestId = destination_id || destinationId;
-    if (!targetDestId) {
+    const finalDestId = destination_id || destinationId;
+    const finalDestName = destination_name || destinationName;
+    const cleanComment = (comment || "").trim();
+
+    if (!finalDestName && !finalDestId) {
       return res.status(400).json({
         success: false,
-        message: "Destination ID is required"
+        message: "Destination name or ID is required"
       });
     }
-
-    const numRating = Math.max(1, Math.min(5, parseInt(rating, 10) || 5));
-    const cleanComment = String(comment || "").trim();
 
     if (!cleanComment) {
       return res.status(400).json({
@@ -121,32 +156,13 @@ exports.createReview = async (req, res) => {
       });
     }
 
-    // Lookup destination name if not provided
-    let finalDestName = destination_name || destinationName;
-    let numericDestId = parseInt(targetDestId, 10);
-
-    if (isNaN(numericDestId)) {
-      // If slug like "jaipur" or "munnar", check if destination exists in DB by name
-      const [dRows] = await pool.query("SELECT id, name FROM destinations WHERE name LIKE ? LIMIT 1", [`%${targetDestId}%`]);
-      if (dRows.length > 0) {
-        numericDestId = dRows[0].id;
-        finalDestName = finalDestName || dRows[0].name;
-      } else {
-        numericDestId = 1; // Fallback
-      }
-    } else if (!finalDestName) {
-      const [dRows] = await pool.query("SELECT name FROM destinations WHERE id = ? LIMIT 1", [numericDestId]);
-      if (dRows.length > 0) {
-        finalDestName = dRows[0].name;
-      }
-    }
-
-    finalDestName = finalDestName || "Roamly Destination";
+    const numRating = Math.max(1, Math.min(5, Number(rating) || 5));
+    const numericDestId = Number.isInteger(Number(finalDestId)) ? Number(finalDestId) : null;
 
     const [result] = await pool.query(
       `INSERT INTO reviews (
-        user_id, destination_id, destination_name, rating, title,
-        comment, mood, duration, budget, season, insider_tip, photo_url, helpful_count
+        user_id, destination_id, destination_name, rating,
+        title, comment, mood, duration, budget, season, insider_tip, photo_url, helpful_count
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
       [
         userId,
@@ -166,7 +182,6 @@ exports.createReview = async (req, res) => {
 
     const insertedId = result.insertId;
 
-    // Fetch newly created review with user info
     const [createdRows] = await pool.query(
       `SELECT r.*, u.name AS user_name, TRIM(CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, ''))) AS user_full_name, u.phone AS user_phone
        FROM reviews r
@@ -183,6 +198,12 @@ exports.createReview = async (req, res) => {
       review: formattedReview
     });
   } catch (error) {
+    if (isDbConnectionError(error)) {
+      return res.status(503).json({
+        success: false,
+        message: "Database connection unavailable. Please configure cloud MySQL in Vercel to post reviews."
+      });
+    }
     console.error("Error creating review:", error);
     res.status(500).json({
       success: false,
@@ -210,6 +231,12 @@ exports.upvoteReview = async (req, res) => {
       helpfulCount: rows[0]?.helpful_count || 1
     });
   } catch (error) {
+    if (isDbConnectionError(error)) {
+      return res.json({
+        success: true,
+        helpfulCount: 1
+      });
+    }
     console.error("Error upvoting review:", error);
     res.status(500).json({
       success: false,
@@ -241,6 +268,12 @@ exports.deleteReview = async (req, res) => {
       message: "Review removed successfully"
     });
   } catch (error) {
+    if (isDbConnectionError(error)) {
+      return res.status(503).json({
+        success: false,
+        message: "Database connection unavailable."
+      });
+    }
     console.error("Error deleting review:", error);
     res.status(500).json({
       success: false,

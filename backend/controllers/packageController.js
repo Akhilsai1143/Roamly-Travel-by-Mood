@@ -1,4 +1,5 @@
 const pool = require("../config/db");
+const { isDbConnectionError } = pool;
 
 // Safe helper to parse JSON fields
 function safeJsonParse(data, fallback = []) {
@@ -157,6 +158,13 @@ exports.getPublicPackages = async (req, res) => {
       packages: formatted
     });
   } catch (error) {
+    if (isDbConnectionError(error) || error.code === "ER_NO_SUCH_TABLE") {
+      return res.json({
+        success: true,
+        count: 0,
+        packages: []
+      });
+    }
     console.error("Error fetching public packages:", error);
     res.status(500).json({
       success: false,
@@ -216,6 +224,12 @@ exports.getPackageById = async (req, res) => {
       package: formatted
     });
   } catch (error) {
+    if (isDbConnectionError(error)) {
+      return res.status(404).json({
+        success: false,
+        message: "Package details currently unavailable."
+      });
+    }
     console.error("Error fetching package by id:", error);
     res.status(500).json({
       success: false,

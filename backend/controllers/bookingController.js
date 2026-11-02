@@ -1,4 +1,5 @@
 const pool = require("../config/db");
+const { isDbConnectionError } = pool;
 const { notifyBookingCreated, notifyBookingStatusUpdated } = require("../config/socket");
 const crypto = require("crypto");
 
@@ -444,6 +445,9 @@ exports.getMyBookings = async (req, res, next) => {
       count: formattedList.length
     });
   } catch (error) {
+    if (isDbConnectionError(error) || error.code === "ER_NO_SUCH_TABLE") {
+      return res.json({ bookings: [], count: 0 });
+    }
     next(error);
   }
 };
@@ -502,6 +506,9 @@ exports.getMyStats = async (req, res, next) => {
       cancelled: Number(stats.cancelled) || 0
     });
   } catch (error) {
+    if (isDbConnectionError(error) || error.code === "ER_NO_SUCH_TABLE") {
+      return res.json({ total: 0, pending: 0, confirmed: 0, rejected: 0, cancelled: 0 });
+    }
     next(error);
   }
 };
@@ -550,6 +557,9 @@ exports.getAllBookings = async (req, res, next) => {
       count: formattedList.length
     });
   } catch (error) {
+    if (isDbConnectionError(error) || error.code === "ER_NO_SUCH_TABLE") {
+      return res.json({ bookings: [], count: 0 });
+    }
     next(error);
   }
 };
@@ -579,6 +589,9 @@ exports.getAdminStats = async (req, res, next) => {
       cancelled: Number(stats.cancelled) || 0
     });
   } catch (error) {
+    if (isDbConnectionError(error) || error.code === "ER_NO_SUCH_TABLE") {
+      return res.json({ total: 0, pending: 0, confirmed: 0, rejected: 0, cancelled: 0 });
+    }
     next(error);
   }
 };
