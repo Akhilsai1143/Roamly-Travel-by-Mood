@@ -3,6 +3,8 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
+  // Explicit absolute base path ensures CSS, JS, and image assets load reliably from any nested route
+  base: "/",
   build: {
     rollupOptions: {
       output: {

@@ -1,55 +1,28 @@
-import axios from "axios";
-import { API_BASE } from "./client.js";
-
-const API_URL = `${API_BASE}/destinations`;
-
-function getAuthConfig() {
-  const token = localStorage.getItem("roamly-token");
-
-  return {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  };
-}
+import apiClient, { API_BASE } from "./client.js";
 
 // Pass page, limit, search and filters to the backend.
 export async function getDestinations(params = {}) {
-  const response = await axios.get(API_URL, { params });
+  const response = await apiClient.get("/destinations", { params });
   return response.data;
 }
 
 export async function getDestination(id) {
-  const response = await axios.get(`${API_URL}/${id}`);
+  const response = await apiClient.get(`/destinations/${id}`);
   return response.data;
 }
 
 export async function createDestination(destination) {
-  const response = await axios.post(
-    API_URL,
-    destination,
-    getAuthConfig()
-  );
-
+  const response = await apiClient.post("/destinations", destination);
   return response.data;
 }
 
 export async function updateDestination(id, destination) {
-  const response = await axios.put(
-    `${API_URL}/${id}`,
-    destination,
-    getAuthConfig()
-  );
-
+  const response = await apiClient.put(`/destinations/${id}`, destination);
   return response.data;
 }
 
 export async function deleteDestination(id) {
-  const response = await axios.delete(
-    `${API_URL}/${id}`,
-    getAuthConfig()
-  );
-
+  const response = await apiClient.delete(`/destinations/${id}`);
   return response.data;
 }
 

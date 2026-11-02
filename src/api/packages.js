@@ -1,4 +1,4 @@
-import apiClient, { API_BASE } from "./client";
+import apiClient, { API_BASE } from "./client.js";
 
 export async function getPublicPackages(params = {}) {
   const response = await apiClient.get("/packages", { params });

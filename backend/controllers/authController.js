@@ -1,5 +1,10 @@
  const pool = require("../config/db");
-const bcrypt = require("bcrypt");
+let bcrypt;
+try {
+    bcrypt = require("bcrypt");
+} catch {
+    bcrypt = require("bcryptjs");
+}
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 

@@ -1,22 +1,10 @@
-import axios from "axios";
-import { API_BASE } from "./client.js";
-
-const USERS_URL = `${API_BASE}/users`;
-
-function getAuthConfig() {
-  const token = localStorage.getItem("roamly-token");
-  return {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  };
-}
+import apiClient from "./client.js";
 
 /**
  * Admin: Fetch aggregate user management statistics
  */
 export async function getUserStats() {
-  const response = await axios.get(`${USERS_URL}/stats`, getAuthConfig());
+  const response = await apiClient.get("/users/stats");
   return response.data;
 }
 
@@ -25,10 +13,7 @@ export async function getUserStats() {
  * @param {Object} params { search, role, status, sort, page, limit }
  */
 export async function getUsers(params = {}) {
-  const response = await axios.get(USERS_URL, {
-    ...getAuthConfig(),
-    params
-  });
+  const response = await apiClient.get("/users", { params });
   return response.data;
 }
 
@@ -37,7 +22,7 @@ export async function getUsers(params = {}) {
  * @param {number|string} id User ID
  */
 export async function getUserById(id) {
-  const response = await axios.get(`${USERS_URL}/${id}`, getAuthConfig());
+  const response = await apiClient.get(`/users/${id}`);
   return response.data;
 }
 
@@ -47,11 +32,7 @@ export async function getUserById(id) {
  * @param {boolean} isActive Target activation state
  */
 export async function updateUserStatus(id, isActive) {
-  const response = await axios.patch(
-    `${USERS_URL}/${id}/status`,
-    { isActive },
-    getAuthConfig()
-  );
+  const response = await apiClient.patch(`/users/${id}/status`, { isActive });
   return response.data;
 }
 
@@ -61,11 +42,7 @@ export async function updateUserStatus(id, isActive) {
  * @param {string} role 'admin' | 'user'
  */
 export async function updateUserRole(id, role) {
-  const response = await axios.patch(
-    `${USERS_URL}/${id}/role`,
-    { role },
-    getAuthConfig()
-  );
+  const response = await apiClient.patch(`/users/${id}/role`, { role });
   return response.data;
 }
 
@@ -75,9 +52,8 @@ export async function updateUserRole(id, role) {
  * @param {Object} options { hard: boolean }
  */
 export async function deleteUser(id, options = {}) {
-  const response = await axios.delete(`${USERS_URL}/${id}`, {
-    ...getAuthConfig(),
-    params: { hard: Boolean(options.hard) }
+  const response = await apiClient.delete(`/users/${id}`, {
+    params: { hard: Boolean(options?.hard) }
   });
   return response.data;
 }

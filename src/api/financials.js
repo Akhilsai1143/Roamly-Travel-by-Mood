@@ -1,4 +1,4 @@
-import apiClient, { API_BASE } from "./client";
+import apiClient, { API_BASE } from "./client.js";
 
 export async function getFinancialOverview() {
   const response = await apiClient.get("/financials/overview");

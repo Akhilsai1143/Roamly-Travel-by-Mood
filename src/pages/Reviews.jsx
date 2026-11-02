@@ -25,9 +25,7 @@ import {
 import { useAuth } from "../context/AuthContext.jsx";
 import { destinations } from "../data/destinations.js";
 import { initialReviews } from "../data/reviews.js";
-import { API_BASE } from "../api/client.js";
-
-const API_URL = API_BASE;
+import apiClient from "../api/client.js";
 
 export default function Reviews() {
   const [params] = useSearchParams();
@@ -129,9 +127,8 @@ export default function Reviews() {
     let isMounted = true;
     async function loadApiReviews() {
       try {
-        const res = await fetch(`${API_URL}/reviews`);
-        if (!res.ok) return;
-        const data = await res.json();
+        const res = await apiClient.get("/reviews");
+        const data = res.data;
         if (data && Array.isArray(data.reviews) && data.reviews.length > 0 && isMounted) {
           setReviewsList((current) => {
             const apiReviewIds = new Set(data.reviews.map((r) => String(r.id)));
@@ -159,7 +156,7 @@ export default function Reviews() {
     if (upvotedIds.includes(reviewId)) return;
 
     // Call API upvote endpoint asynchronously
-    fetch(`${API_URL}/reviews/${reviewId}/upvote`, { method: "PATCH" }).catch(() => null);
+    apiClient.patch(`/reviews/${reviewId}/upvote`).catch(() => null);
 
     const updated = reviewsList.map((r) => {
       if (r.id === reviewId) {
@@ -226,32 +223,22 @@ export default function Reviews() {
     // Try API first if available, otherwise persist locally
     try {
       if (token) {
-        const response = await fetch(`${API_URL}/reviews`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            destination_id: destinationId,
-            destination_name: selectedPlace ? selectedPlace.name : "Custom Escape",
-            rating: Number(rating),
-            title: title.trim(),
-            comment: comment.trim(),
-            mood,
-            duration: duration.trim(),
-            budget: formattedBudget,
-            season: season.trim(),
-            insider_tip: insiderTip.trim(),
-            photo_url: photoUrl.trim()
-          })
+        const response = await apiClient.post("/reviews", {
+          destination_id: destinationId,
+          destination_name: selectedPlace ? selectedPlace.name : "Custom Escape",
+          rating: Number(rating),
+          title: title.trim(),
+          comment: comment.trim(),
+          mood,
+          duration: duration.trim(),
+          budget: formattedBudget,
+          season: season.trim(),
+          insider_tip: insiderTip.trim(),
+          photo_url: photoUrl.trim()
         });
 
-        if (response.ok) {
-          const apiData = await response.json();
-          if (apiData && apiData.review) {
-            newReview = apiData.review;
-          }
+        if (response.data && response.data.review) {
+          newReview = response.data.review;
         }
       }
     } catch {

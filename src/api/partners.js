@@ -1,4 +1,4 @@
-import apiClient from "./client";
+import apiClient from "./client.js";
 
 export async function getAllPartners(params = {}) {
   const response = await apiClient.get("/partners", { params });
