@@ -1,0 +1,245 @@
+/* AdminPartners.css — Polished Partner & Supplier Console */
+
+/* CATEGORY BADGES */
+.partner-category-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+/* CONTACT CELL */
+.admin-contact-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-contact-cell strong {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.admin-contact-cell small {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+.payment-terms-badge {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 3px 9px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+/* SERVICES LINK TRIGGER */
+.admin-services-link-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: opacity 0.15s ease;
+}
+
+.admin-services-link-btn:hover {
+  opacity: 0.8;
+}
+
+.admin-services-link-btn strong {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1b4332;
+  text-decoration: underline;
+}
+
+.admin-services-link-btn small {
+  font-size: 0.74rem;
+  color: #64748b;
+}
+
+/* PARTNER MODAL */
+.admin-partner-modal {
+  background: #ffffff;
+  width: 100%;
+  max-width: 680px;
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  margin: auto;
+  overflow: hidden;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ALLOCATED SERVICES DRAWER */
+.admin-partner-services-drawer {
+  background: #ffffff;
+  width: 100%;
+  max-width: 680px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  animation: drawerSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.partner-services-cards-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ptn-service-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 18px;
+  transition: border-color 0.15s ease;
+}
+
+.ptn-service-card:hover {
+  border-color: #cbd5e1;
+}
+
+.ptn-svc-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.ptn-svc-cost {
+  text-align: right;
+}
+
+.ptn-svc-cost strong {
+  color: #1b4332;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.ptn-svc-cost small {
+  display: block;
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+.ptn-service-card h4 {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+}
+
+.ptn-svc-pkg-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 10px;
+  margin-top: 8px;
+}
+
+.ptn-svc-notes {
+  margin: 8px 0 0 0;
+  font-size: 0.8rem;
+  color: #64748b;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* RESPONSIVE LAYOUT */
+@media (max-width: 768px) {
+  .admin-partner-modal {
+    max-width: 95%;
+    margin: 10px auto;
+  }
+
+  .admin-partner-services-drawer {
+    max-width: 100%;
+  }
+
+  .ptn-svc-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .ptn-svc-cost {
+    text-align: left;
+  }
+}
+
+/* TABLE WRAP & RESPONSIVENESS */
+.admin-partners-page .admin-table-wrap {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  display: block !important;
+  box-sizing: border-box !important;
+  border-radius: 10px;
+  border: 1px solid #edf0e9;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+}
+
+.partners-table {
+  min-width: 1120px;
+  width: 100%;
+}
+
+.partners-table td {
+  padding: 14px 16px;
+  vertical-align: middle;
+}
+
+.admin-partners-page .admin-pkg-cell {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 4px !important;
+  min-width: 220px;
+}
+
+.admin-partners-page .admin-pkg-cell code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #1b4332 !important;
+  background: #eef7f0 !important;
+  border: 1px solid #cce8d4 !important;
+  padding: 2px 7px !important;
+  border-radius: 5px !important;
+  display: inline-block !important;
+  letter-spacing: 0.3px !important;
+  width: fit-content !important;
+}
+
+.admin-partners-page .admin-pkg-cell strong {
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  line-height: 1.35 !important;
+  display: block !important;
+  white-space: normal !important;
+}

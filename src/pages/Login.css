@@ -1,0 +1,817 @@
+/* ==========================================================================
+   ROAMLY — SPLIT-SCREEN LOGIN WITH INFINITE DESTINATION GALLERY
+   ========================================================================== */
+
+.roamly-login,
+.roamly-login * {
+  box-sizing: border-box;
+}
+
+.roamly-login {
+  --login-ink: #23342a;
+  --login-green: #304737;
+  --login-green-hover: #405f49;
+  --login-paper: #fbfaf6;
+  --login-paper-subtle: #f2f1ea;
+  --login-card-bg: #cad2c4;
+  --login-orange: #d88a61;
+
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  grid-template-columns: 58% 42%;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  color: var(--login-ink);
+  background: var(--login-paper);
+  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* ==========================================================================
+   LEFT SIDE: INFINITE MULTI-COLUMN DESTINATION GALLERY
+   ========================================================================== */
+
+.login-journey {
+  position: relative;
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
+  background: #d8ded3;
+  user-select: none;
+}
+
+/* Subtle top and bottom vignette overlays for cinematic edge fade */
+.login-journey::before,
+.login-journey::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 80px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.login-journey::before {
+  top: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(216, 222, 211, 0.95) 0%,
+    rgba(216, 222, 211, 0.6) 40%,
+    transparent 100%
+  );
+}
+
+.login-journey::after {
+  bottom: 0;
+  background: linear-gradient(
+    0deg,
+    rgba(216, 222, 211, 0.95) 0%,
+    rgba(216, 222, 211, 0.6) 40%,
+    transparent 100%
+  );
+}
+
+/* Container holding the independent vertical columns */
+.login-gallery-wrapper {
+  position: relative;
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  padding: 0 16px;
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    black 6%,
+    black 94%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    black 6%,
+    black 94%,
+    transparent 100%
+  );
+}
+
+/* Individual vertical column */
+.gallery-column {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Continuous scrolling track */
+.gallery-track {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  will-change: transform;
+}
+
+/* Infinite loop keyframe animations */
+@keyframes gallery-scroll-up {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes gallery-scroll-down {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* Upward continuous scroll */
+.gallery-track-up {
+  animation: gallery-scroll-up 26s linear infinite;
+}
+
+/* Downward continuous scroll */
+.gallery-track-down {
+  animation: gallery-scroll-down 34s linear infinite;
+}
+
+/* Staggered, individual speeds per column to create organic multi-layered parallax */
+.gallery-col-1 .gallery-track-up {
+  animation-duration: 25s;
+}
+
+.gallery-col-2 .gallery-track-down {
+  animation-duration: 33s;
+}
+
+.gallery-col-3 .gallery-track-up {
+  animation-duration: 28s;
+}
+
+/* Does NOT pause on hover — continuous scrolling guaranteed */
+.login-journey:hover .gallery-track,
+.gallery-column:hover .gallery-track,
+.gallery-track:hover {
+  animation-play-state: running !important;
+}
+
+/* Image sequence group: contains cards with uniform bottom gap for exact 50% loop match */
+.gallery-group {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 16px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/* Individual destination image card */
+.gallery-card {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--login-card-bg);
+  box-shadow:
+    0 10px 28px -6px rgba(24, 38, 28, 0.16),
+    0 2px 6px rgba(24, 38, 28, 0.06);
+  flex-shrink: 0;
+  transform: translateZ(0);
+}
+
+.gallery-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.02);
+  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform;
+}
+
+/* Subtle image hover zoom without affecting continuous scrolling */
+.gallery-card:hover img {
+  transform: scale(1.08);
+}
+
+/* Bottom dark gradient overlay for optimal legibility of destination names */
+.gallery-card::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 1;
+  background: linear-gradient(
+    180deg,
+    rgba(18, 28, 22, 0) 0%,
+    rgba(18, 28, 22, 0.05) 42%,
+    rgba(14, 23, 17, 0.45) 70%,
+    rgba(10, 18, 13, 0.78) 100%
+  );
+}
+
+/* Elegant, high-contrast destination name label */
+.gallery-card-name {
+  position: absolute;
+  bottom: 13px;
+  left: 14px;
+  right: 14px;
+  z-index: 2;
+  color: #ffffff;
+  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  line-height: 1.25;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: transform 0.35s ease;
+}
+
+.gallery-card:hover .gallery-card-name {
+  transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   RIGHT SIDE: STATIONARY LOGIN PANEL
+   ========================================================================== */
+
+.login-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  height: 100%;
+  overflow-y: auto;
+  padding: 32px clamp(28px, 5.2vw, 76px) 24px;
+  border-left: 1px solid rgba(40, 57, 43, 0.08);
+  background:
+    radial-gradient(
+      ellipse at 100% 0%,
+      rgba(231, 235, 223, 0.55),
+      transparent 48%
+    ),
+    var(--login-paper);
+  scrollbar-width: thin;
+  scrollbar-color: #d6d8ce transparent;
+}
+
+.login-panel-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.login-panel-caption {
+  color: #858b7e;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.7px;
+}
+
+.login-panel-sparkle {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid #e4e5dc;
+  border-radius: 50%;
+  color: #73816b;
+  animation: login-sparkle 4s ease-in-out infinite;
+}
+
+.login-panel-content {
+  width: 100%;
+  max-width: 420px;
+  margin: auto;
+  padding: 34px 0;
+  animation: login-content-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.login-mobile-brand {
+  display: none;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 28px;
+  color: var(--login-ink);
+  text-decoration: none;
+  font-family: "Manrope", sans-serif;
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.login-brand-dot {
+  color: var(--login-orange);
+}
+
+.login-welcome {
+  margin-bottom: 30px;
+}
+
+.login-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #77816f;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.login-welcome .login-kicker {
+  margin-bottom: 16px;
+}
+
+.login-welcome h1 {
+  margin: 0;
+  color: #24352a;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(36px, 3.2vw, 48px);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -1.8px;
+}
+
+.login-welcome h1 em {
+  color: #75836d;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.login-welcome > p {
+  max-width: 380px;
+  margin: 16px 0 0;
+  color: #7b8078;
+  font-size: 13.5px;
+  line-height: 1.8;
+}
+
+/* ==========================================================================
+   AUTHENTICATION FORM CONTROLS
+   ========================================================================== */
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.login-field label {
+  color: #354338;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.login-field input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 52px;
+  padding: 0 16px;
+  border: 1px solid #dedfd5;
+  border-radius: 5px;
+  outline: none;
+  color: #27362b;
+  background: rgba(255, 255, 255, 0.85);
+  font: inherit;
+  font-size: 13.5px;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+.login-field input::placeholder {
+  color: #a0a398;
+}
+
+.login-field input:focus {
+  border-color: #627b65;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(98, 123, 101, 0.12);
+}
+
+.login-password-wrap {
+  position: relative;
+}
+
+.login-password-wrap input {
+  padding-right: 52px;
+}
+
+.login-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 7px;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 4px;
+  color: #778074;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+.login-password-toggle:hover {
+  color: #293e30;
+  background: #eff1e9;
+}
+
+.login-submit {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  width: 100%;
+  min-height: 54px;
+  margin-top: 4px;
+  padding: 6px 7px 6px 20px;
+  overflow: hidden;
+  border: 1px solid var(--login-green);
+  border-radius: 5px;
+  color: white;
+  background: var(--login-green);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.3s ease,
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.login-submit::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(
+    110deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.15) 48%,
+    transparent 75%
+  );
+  transform: translateX(-110%);
+  transition: transform 0.65s ease;
+}
+
+.login-submit:hover:not(:disabled)::before {
+  transform: translateX(110%);
+}
+
+.login-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: var(--login-green-hover);
+  box-shadow: 0 12px 25px rgba(48, 71, 55, 0.18);
+}
+
+.login-submit:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.login-submit > span:first-child,
+.login-submit-arrow {
+  position: relative;
+  z-index: 1;
+}
+
+.login-submit-arrow {
+  display: grid;
+  width: 39px;
+  height: 39px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 4px;
+  color: var(--login-green);
+  background: #f2f0e7;
+  transition: transform 0.3s ease;
+}
+
+.login-submit:hover .login-submit-arrow {
+  transform: translateX(3px);
+}
+
+.login-secure-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: #858a80;
+  font-size: 10px;
+}
+
+.login-secure-note svg {
+  flex-shrink: 0;
+  color: #778a70;
+}
+
+/* ==========================================================================
+   CREATE ACCOUNT DIVIDER & LINK
+   ========================================================================== */
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin: 30px 0 18px;
+  color: #9a9d92;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+}
+
+.login-divider span:first-child,
+.login-divider span:last-child {
+  height: 1px;
+  flex: 1;
+  background: #e4e4dc;
+}
+
+.login-create-account {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  border: 1px solid #d9ddd1;
+  border-radius: 5px;
+  color: #3b5140;
+  background: transparent;
+  text-decoration: none;
+  font-size: 12.5px;
+  font-weight: 700;
+  transition:
+    border-color 0.25s ease,
+    background 0.25s ease,
+    gap 0.25s ease;
+}
+
+.login-create-account:hover {
+  gap: 16px;
+  border-color: #8b9b83;
+  background: #eff1e9;
+}
+
+.login-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 20px;
+  padding: 12px 14px;
+  border: 1px solid #efd1c8;
+  border-radius: 5px;
+  color: #a04432;
+  background: #fff2ed;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.login-error > span {
+  display: grid;
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 50%;
+  color: white;
+  background: #b65b46;
+  font-weight: 700;
+}
+
+.login-panel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding-top: 18px;
+  border-top: 1px solid #e7e7df;
+  color: #96998e;
+  font-size: 9px;
+  letter-spacing: 1.2px;
+}
+
+.login-panel-footer a {
+  color: #5e6f5d;
+  text-decoration: none;
+  font-size: 11.5px;
+  letter-spacing: 0;
+}
+
+.login-panel-footer a:hover {
+  color: #263d2d;
+}
+
+/* ==========================================================================
+   MICRO-ANIMATIONS
+   ========================================================================== */
+
+@keyframes login-content-enter {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes login-sparkle {
+  0%, 100% {
+    transform: rotate(0deg);
+    color: #73816b;
+  }
+  50% {
+    transform: rotate(14deg);
+    color: #d88a61;
+  }
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN (DESKTOP / TABLET / MOBILE)
+   ========================================================================== */
+
+/* Medium Desktops & Tablets (Landscape) */
+@media (max-width: 1080px) {
+  .roamly-login {
+    grid-template-columns: 50% 50%;
+  }
+
+  /* Show 2 columns on medium screens for optimal card widths */
+  .gallery-col-3 {
+    display: none;
+  }
+
+  .login-panel {
+    padding-right: 32px;
+    padding-left: 32px;
+  }
+}
+
+/* Tablets (Portrait) */
+@media (max-width: 820px) {
+  .roamly-login {
+    grid-template-columns: 46% 54%;
+  }
+
+  .login-welcome h1 {
+    font-size: clamp(32px, 4vw, 42px);
+  }
+}
+
+/* Mobile Screens */
+@media (max-width: 680px) {
+  .roamly-login {
+    position: relative;
+    inset: auto;
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  /* Compact banner gallery at the top of the mobile login screen */
+  .login-journey {
+    height: 250px;
+    min-height: 250px;
+    max-height: 270px;
+    flex-shrink: 0;
+  }
+
+  .login-gallery-wrapper {
+    gap: 10px;
+    padding: 0 10px;
+  }
+
+  .gallery-group {
+    gap: 10px;
+    padding-bottom: 10px;
+  }
+
+  /* Show 2 slim animated columns on mobile */
+  .gallery-col-3 {
+    display: none;
+  }
+
+  .gallery-card {
+    border-radius: 10px;
+  }
+
+  .gallery-card-name {
+    bottom: 9px;
+    left: 10px;
+    right: 10px;
+    font-size: 11.5px;
+    letter-spacing: 0.2px;
+  }
+
+  .gallery-track-up {
+    animation-duration: 20s;
+  }
+
+  .gallery-track-down {
+    animation-duration: 26s;
+  }
+
+  .login-panel {
+    height: auto;
+    min-height: calc(100dvh - 250px);
+    overflow: visible;
+    padding: 24px 20px 24px;
+    border-top: 1px solid #e2e4da;
+    border-left: 0;
+  }
+
+  .login-panel-content {
+    max-width: 100%;
+    padding: 16px 0 24px;
+  }
+
+  .login-mobile-brand {
+    display: inline-flex;
+  }
+
+  .login-welcome h1 {
+    font-size: clamp(34px, 7.5vw, 42px);
+  }
+
+  .login-panel-footer {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 380px) {
+  .login-panel {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .login-panel-caption {
+    font-size: 8px;
+  }
+
+  .gallery-card-name {
+    font-size: 10.5px;
+    bottom: 8px;
+    left: 8px;
+  }
+}
+
+/* ==========================================================================
+   ACCESSIBILITY: PREFERS-REDUCED-MOTION
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery-track-up,
+  .gallery-track-down,
+  .login-panel-sparkle,
+  .login-panel-content {
+    animation: none !important;
+  }
+
+  .gallery-card img {
+    transition: none !important;
+  }
+
+  .roamly-login *,
+  .roamly-login *::before,
+  .roamly-login *::after {
+    transition-duration: 0.01ms !important;
+  }
+}

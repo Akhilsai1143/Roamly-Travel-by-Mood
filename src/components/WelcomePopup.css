@@ -1,0 +1,704 @@
+/* ============================================================================
+   ROAMLY - PREMIUM WELCOME & REGISTRATION POPUP STYLES
+   ============================================================================ */
+
+/* 1. Backdrop Overlay */
+.welcome-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(14, 25, 20, 0.76);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: welcomeOverlayFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes welcomeOverlayFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* 2. Modal Container */
+.welcome-popup-container {
+    position: relative;
+    width: 100%;
+    max-width: 880px;
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 25px 60px -15px rgba(10, 20, 15, 0.45),
+                0 0 0 1px rgba(255, 255, 255, 0.2);
+    display: grid;
+    grid-template-columns: 1fr 1.05fr;
+    overflow: hidden;
+    max-height: 90vh;
+    animation: welcomeContainerScaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes welcomeContainerScaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* 3. Close Button (X) */
+.welcome-popup-close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #f1f5f3;
+    border: 1px solid #e2ece6;
+    color: #4a574f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.welcome-popup-close-btn:hover {
+    background: #1f3329;
+    color: #ffffff;
+    border-color: #1f3329;
+    transform: rotate(90deg);
+}
+
+.welcome-popup-close-btn:focus-visible {
+    outline: 2px solid #d98255;
+    outline-offset: 2px;
+}
+
+/* 4. LEFT SECTION - Visual Destination Showcase */
+.welcome-popup-visual {
+    position: relative;
+    background: #14201a;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    min-height: 520px;
+}
+
+.welcome-visual-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    filter: brightness(0.9);
+    transform: scale(1.04);
+    transition: transform 6s ease;
+}
+
+.welcome-popup-container:hover .welcome-visual-img {
+    transform: scale(1.08);
+}
+
+.welcome-visual-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(15, 28, 22, 0.55) 0%,
+        rgba(15, 28, 22, 0.25) 40%,
+        rgba(15, 28, 22, 0.92) 100%
+    );
+    z-index: 1;
+}
+
+.welcome-visual-content {
+    position: relative;
+    z-index: 2;
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    color: #ffffff;
+}
+
+/* Branding in Visual */
+.welcome-visual-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(20, 32, 26, 0.45);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 8px 14px;
+    border-radius: 999px;
+    align-self: flex-start;
+}
+
+.welcome-brand-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #e5a855;
+}
+
+.welcome-brand-text-wrap {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.welcome-brand-text {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: #ffffff;
+}
+
+.welcome-brand-dot {
+    color: #d98255;
+}
+
+.welcome-brand-tag {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    color: #c8d6ce;
+    text-transform: uppercase;
+}
+
+/* Copy in Visual */
+.welcome-visual-copy {
+    margin-top: auto;
+    margin-bottom: 24px;
+}
+
+.welcome-visual-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(217, 130, 85, 0.25);
+    border: 1px solid rgba(217, 130, 85, 0.5);
+    color: #f7cebe;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+}
+
+.welcome-visual-title {
+    font-family: Georgia, "DM Sans", serif;
+    font-size: 30px;
+    line-height: 1.2;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 12px 0;
+    letter-spacing: -0.5px;
+}
+
+.welcome-dot {
+    color: #d98255;
+}
+
+.welcome-visual-desc {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: #e2ece6;
+    margin: 0;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Trust Perks in Visual */
+.welcome-visual-perks {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+    padding-top: 16px;
+    font-size: 11.5px;
+    color: #cdd9d2;
+}
+
+.welcome-perk-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.welcome-perk-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #d98255;
+}
+
+/* 5. RIGHT SECTION - Form Panel */
+.welcome-popup-form-panel {
+    padding: 36px 34px;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow-y: auto;
+    max-height: 90vh;
+}
+
+.welcome-form-inner {
+    width: 100%;
+}
+
+.welcome-form-header {
+    margin-bottom: 20px;
+}
+
+.welcome-form-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: #d98255;
+    margin-bottom: 6px;
+}
+
+.welcome-form-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1f3329;
+    margin: 0 0 6px 0;
+    letter-spacing: -0.3px;
+}
+
+.welcome-form-subtitle {
+    font-size: 13px;
+    line-height: 1.45;
+    color: #64748b;
+    margin: 0;
+}
+
+/* Error Box */
+.welcome-error-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    margin-bottom: 16px;
+    animation: welcomeErrorSlide 0.25s ease-out;
+}
+
+@keyframes welcomeErrorSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.welcome-error-icon {
+    flex-shrink: 0;
+}
+
+/* Form Styles */
+.welcome-form {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+}
+
+.welcome-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.welcome-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #2d3e33;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.required-star {
+    color: #d98255;
+}
+
+.welcome-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #fbf9f4;
+    border: 1px solid #e2ddd3;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.welcome-input-wrap:focus-within {
+    border-color: #1f3329;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(31, 51, 41, 0.08);
+}
+
+.welcome-input-icon {
+    position: absolute;
+    left: 12px;
+    color: #8c9790;
+    pointer-events: none;
+}
+
+.welcome-input {
+    width: 100%;
+    padding: 10px 12px 10px 38px;
+    border: none;
+    background: transparent;
+    font-size: 13.5px;
+    color: #18261f;
+    font-family: inherit;
+    outline: none;
+}
+
+.welcome-input::placeholder {
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+/* Phone input with country badge */
+.welcome-phone-row {
+    display: flex;
+    gap: 8px;
+}
+
+.welcome-flag-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f2ece1;
+    border: 1px solid #e2ddd3;
+    border-radius: 10px;
+    padding: 0 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #2d483a;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.welcome-phone-input-wrap {
+    flex: 1;
+}
+
+/* Travel Interest Chips Grid */
+.welcome-interests-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.welcome-interest-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px;
+    background: #fbf9f4;
+    border: 1px solid #e2ddd3;
+    border-radius: 8px;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #37473d;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    text-align: left;
+    outline: none;
+}
+
+.welcome-interest-chip:hover {
+    border-color: #2d483a;
+    background: #f4ede2;
+}
+
+.welcome-interest-chip.selected {
+    background: #1f3329;
+    border-color: #1f3329;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.welcome-interest-chip .interest-icon {
+    flex-shrink: 0;
+    color: #8c9790;
+    transition: color 0.18s ease;
+}
+
+.welcome-interest-chip.selected .interest-icon {
+    color: #e5a855;
+}
+
+.welcome-interest-chip .interest-check {
+    margin-left: auto;
+    color: #e5a855;
+}
+
+/* Primary Action Button */
+.welcome-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 18px;
+    background: #1f3329;
+    color: #ffffff;
+    font-size: 14.5px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.22s ease;
+    margin-top: 4px;
+    box-shadow: 0 4px 14px rgba(31, 51, 41, 0.25);
+}
+
+.welcome-btn-primary:hover:not(:disabled) {
+    background: #284436;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(31, 51, 41, 0.32);
+}
+
+.welcome-btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.welcome-btn-primary:disabled {
+    opacity: 0.75;
+    cursor: not-allowed;
+}
+
+.welcome-spin {
+    animation: welcomeSpin 1s linear infinite;
+}
+
+@keyframes welcomeSpin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.welcome-terms-note {
+    font-size: 11px;
+    line-height: 1.45;
+    color: #94a3b8;
+    text-align: center;
+    margin: 4px 0 0 0;
+}
+
+/* 6. Success State */
+.welcome-success-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px 8px;
+    animation: welcomeContainerScaleIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.welcome-success-icon-wrap {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #ecfdf5;
+    color: #059669;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    border: 2px solid #a7f3d0;
+    box-shadow: 0 8px 24px rgba(5, 150, 105, 0.15);
+}
+
+.welcome-success-kicker {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    color: #d98255;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.welcome-success-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1f3329;
+    margin: 0 0 10px 0;
+    letter-spacing: -0.3px;
+}
+
+.welcome-success-desc {
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: #4b5563;
+    margin: 0 0 20px 0;
+    max-width: 320px;
+}
+
+.welcome-success-perk-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    background: #fbf9f4;
+    border: 1px solid #e6e0d4;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 22px;
+}
+
+.welcome-success-perk {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: #2d483a;
+    font-weight: 500;
+}
+
+.welcome-success-perk svg {
+    color: #d98255;
+}
+
+.welcome-success-cta {
+    margin-top: 0;
+}
+
+/* 7. RESPONSIVE DESIGN */
+
+/* Tablet (max-width: 860px) */
+@media (max-width: 860px) {
+    .welcome-popup-container {
+        max-width: 720px;
+        grid-template-columns: 1fr 1.1fr;
+    }
+
+    .welcome-popup-visual {
+        min-height: 480px;
+    }
+
+    .welcome-visual-content {
+        padding: 24px 20px;
+    }
+
+    .welcome-visual-title {
+        font-size: 25px;
+    }
+
+    .welcome-popup-form-panel {
+        padding: 28px 24px;
+    }
+}
+
+/* Mobile (max-width: 640px) */
+@media (max-width: 640px) {
+    .welcome-popup-overlay {
+        padding: 12px;
+        align-items: flex-end;
+    }
+
+    .welcome-popup-container {
+        grid-template-columns: 1fr;
+        max-height: 88vh;
+        border-radius: 20px 20px 16px 16px;
+        overflow-y: auto;
+    }
+
+    .welcome-popup-visual {
+        min-height: 180px;
+        max-height: 180px;
+    }
+
+    .welcome-visual-content {
+        padding: 18px 16px;
+    }
+
+    .welcome-visual-copy {
+        margin-bottom: 0;
+    }
+
+    .welcome-visual-desc,
+    .welcome-visual-perks {
+        display: none;
+    }
+
+    .welcome-visual-title {
+        font-size: 20px;
+        margin: 0;
+    }
+
+    .welcome-popup-form-panel {
+        padding: 22px 18px 26px 18px;
+    }
+
+    .welcome-form-title {
+        font-size: 19px;
+    }
+
+    .welcome-interests-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 5px;
+    }
+
+    .welcome-interest-chip {
+        padding: 6px 8px;
+        font-size: 11px;
+    }
+
+    .welcome-popup-close-btn {
+        top: 12px;
+        right: 12px;
+        width: 34px;
+        height: 34px;
+        background: rgba(255, 255, 255, 0.9);
+        color: #18261f;
+    }
+}
+

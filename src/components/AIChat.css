@@ -1,0 +1,690 @@
+/* ============================================================================
+   ROAMLY AI TRAVEL ASSISTANT — AESTHETIC STYLING
+   Brand Tokens: Ink (#18261f), Paper (#fbf9f4), Forest (#2d483a), Terracotta (#d98255)
+   ============================================================================ */
+
+/* Floating Launcher Button */
+.roamly-ai-launcher {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9985;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: linear-gradient(135deg, #202a25 0%, #3d5144 100%);
+  color: #f7f6f1;
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  padding: 10px 18px;
+  border-radius: 9999px;
+  box-shadow: 0 10px 28px -4px rgba(32, 42, 37, 0.35), 0 0 0 1px rgba(217, 130, 85, 0.2);
+  cursor: pointer;
+  transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: "DM Sans", sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.1px;
+}
+
+
+.roamly-ai-launcher:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 16px 36px -6px rgba(20, 32, 26, 0.45), 0 0 0 2px rgba(217, 130, 85, 0.4);
+  background: linear-gradient(135deg, #182820 0%, #273e32 100%);
+}
+
+.roamly-ai-launcher-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(217, 130, 85, 0.25);
+  border-radius: 50%;
+  color: #f7b28a;
+}
+
+.roamly-ai-pulse-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 9px;
+  height: 9px;
+  background: #10b981;
+  border: 2px solid #1f3329;
+  border-radius: 50%;
+  animation: roamlyAiPulse 2s infinite;
+}
+
+@keyframes roamlyAiPulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* Chat Window Panel */
+.roamly-ai-panel {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  width: 420px;
+  max-width: calc(100vw - 32px);
+  height: 640px;
+  max-height: calc(100vh - 64px);
+  background: #fbf9f4;
+  border-radius: 20px;
+  box-shadow: 0 20px 50px -10px rgba(20, 32, 26, 0.35), 0 0 0 1px rgba(230, 224, 212, 0.9);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: "DM Sans", sans-serif;
+  animation: roamlyAiSlideUp 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes roamlyAiSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Panel Header */
+.roamly-ai-header {
+  background: linear-gradient(135deg, #18261f 0%, #25392f 100%);
+  color: #ffffff;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.roamly-ai-header-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.roamly-ai-avatar {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #d98255 0%, #b36338 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(217, 130, 85, 0.35);
+}
+
+.roamly-ai-avatar-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 11px;
+  height: 11px;
+  background: #10b981;
+  border: 2px solid #18261f;
+  border-radius: 50%;
+}
+
+.roamly-ai-header-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: #f7f6f1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.roamly-ai-header-subtitle {
+  font-size: 11.5px;
+  color: #9cb1a5;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.roamly-ai-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.roamly-ai-icon-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #e5ece8;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.roamly-ai-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+/* Chat Messages Container */
+.roamly-ai-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #fbf9f4;
+  scroll-behavior: smooth;
+}
+
+/* Custom Scrollbar */
+.roamly-ai-messages::-webkit-scrollbar {
+  width: 5px;
+}
+.roamly-ai-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+.roamly-ai-messages::-webkit-scrollbar-thumb {
+  background: #ded7cb;
+  border-radius: 4px;
+}
+
+/* Welcome Card */
+.roamly-ai-welcome-card {
+  background: #ffffff;
+  border: 1px solid #ebe5dc;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 16px -2px rgba(20, 32, 26, 0.05);
+}
+
+.roamly-ai-welcome-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1f3329;
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.roamly-ai-welcome-cursive {
+  font-family: "Caveat", cursive;
+  font-size: 18px;
+  color: #d98255;
+  font-weight: 600;
+}
+
+.roamly-ai-welcome-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #4a574f;
+  margin-bottom: 12px;
+}
+
+/* Suggestion Chips */
+.roamly-ai-suggestions-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.roamly-ai-suggestion-chip {
+  background: #f2ece1;
+  border: 1px solid #e2dac9;
+  color: #1f3329;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 6px 11px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.roamly-ai-suggestion-chip:hover {
+  background: #d98255;
+  color: #ffffff;
+  border-color: #d98255;
+  transform: translateY(-1px);
+}
+
+/* Message Rows */
+.roamly-ai-message-row {
+  display: flex;
+  flex-direction: column;
+  max-width: 88%;
+}
+
+.roamly-ai-message-row.user {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.roamly-ai-message-row.assistant {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+
+/* Message Bubbles */
+.roamly-ai-bubble {
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  word-break: break-word;
+}
+
+.roamly-ai-bubble.user {
+  background: #18261f;
+  color: #ffffff;
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 4px 12px rgba(24, 38, 31, 0.15);
+}
+
+.roamly-ai-bubble.assistant {
+  background: #ffffff;
+  color: #1a2620;
+  border: 1px solid #ebe5dc;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 4px 14px rgba(20, 32, 26, 0.04);
+}
+
+.roamly-ai-message-time {
+  font-size: 10.5px;
+  color: #8c968f;
+  margin-top: 4px;
+  padding: 0 4px;
+}
+
+/* Assistant Markdown Styling */
+.roamly-ai-bubble.assistant h3,
+.roamly-ai-bubble.assistant h4 {
+  margin: 10px 0 6px 0;
+  color: #18261f;
+  font-weight: 700;
+}
+.roamly-ai-bubble.assistant h3 {
+  font-size: 14.5px;
+}
+.roamly-ai-bubble.assistant h4 {
+  font-size: 13.5px;
+  color: #2d483a;
+}
+.roamly-ai-bubble.assistant p {
+  margin: 6px 0;
+}
+.roamly-ai-bubble.assistant ul,
+.roamly-ai-bubble.assistant ol {
+  margin: 6px 0;
+  padding-left: 18px;
+}
+.roamly-ai-bubble.assistant li {
+  margin-bottom: 4px;
+}
+.roamly-ai-bubble.assistant code {
+  background: #f2ece1;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+  color: #1f3329;
+}
+.roamly-ai-bubble.assistant table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 12px;
+}
+.roamly-ai-bubble.assistant th,
+.roamly-ai-bubble.assistant td {
+  border: 1px solid #e6e0d4;
+  padding: 6px 8px;
+  text-align: left;
+}
+.roamly-ai-bubble.assistant th {
+  background: #f4eee3;
+  font-weight: 700;
+}
+
+/* Verified Package Cards Inside Chat */
+.roamly-ai-cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.roamly-ai-pkg-card {
+  background: #ffffff;
+  border: 1px solid #e8e2d8;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.2s ease;
+}
+
+.roamly-ai-pkg-card:hover {
+  border-color: #d98255;
+}
+
+.roamly-ai-pkg-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.roamly-ai-pkg-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #18261f;
+  line-height: 1.35;
+}
+
+.roamly-ai-tier-tag {
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.roamly-ai-tier-tag.standard {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.roamly-ai-tier-tag.comfort {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.roamly-ai-tier-tag.premium {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.roamly-ai-pkg-price-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.roamly-ai-pkg-price {
+  font-size: 14px;
+  font-weight: 700;
+  color: #d98255;
+}
+
+.roamly-ai-pkg-price span {
+  font-size: 11px;
+  color: #737971;
+  font-weight: 500;
+}
+
+.roamly-ai-pkg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #2d483a;
+  color: #ffffff;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.roamly-ai-pkg-btn:hover {
+  background: #18261f;
+}
+
+/* Destination Pill Cards Inside Chat */
+.roamly-ai-dest-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px 8px 2px;
+  margin-top: 6px;
+}
+
+.roamly-ai-dest-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+.roamly-ai-dest-scroll::-webkit-scrollbar-thumb {
+  background: #dcd4c5;
+  border-radius: 4px;
+}
+
+.roamly-ai-dest-card {
+  min-width: 140px;
+  max-width: 140px;
+  background: #ffffff;
+  border: 1px solid #e8e2d8;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s ease;
+}
+
+.roamly-ai-dest-card:hover {
+  transform: translateY(-2px);
+  border-color: #d98255;
+}
+
+.roamly-ai-dest-img {
+  width: 100%;
+  height: 75px;
+  object-fit: cover;
+  background: #e6e0d4;
+}
+
+.roamly-ai-dest-info {
+  padding: 8px;
+}
+
+.roamly-ai-dest-name {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #18261f;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.roamly-ai-dest-meta {
+  font-size: 10px;
+  color: #737971;
+  margin-top: 2px;
+}
+
+/* Typing Indicator */
+.roamly-ai-typing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #ebe5dc;
+  padding: 10px 14px;
+  border-radius: 16px;
+  width: fit-content;
+  color: #737971;
+  font-size: 12.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.roamly-ai-typing-dots {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.roamly-ai-typing-dot {
+  width: 6px;
+  height: 6px;
+  background: #d98255;
+  border-radius: 50%;
+  animation: roamlyAiBlink 1.4s infinite both;
+}
+
+.roamly-ai-typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.roamly-ai-typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes roamlyAiBlink {
+  0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1.1); }
+}
+
+/* Error State */
+.roamly-ai-error-box {
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.roamly-ai-retry-btn {
+  background: #b91c1c;
+  color: #ffffff;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Panel Footer & Input */
+.roamly-ai-footer {
+  padding: 14px 18px;
+  background: #ffffff;
+  border-top: 1px solid #ebe5dc;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.roamly-ai-input-wrap {
+  display: flex;
+  align-items: center;
+  background: #f7f6f1;
+  border: 1.5px solid #e6e0d4;
+  border-radius: 14px;
+  padding: 4px 6px 4px 14px;
+  transition: all 0.2s ease;
+}
+
+.roamly-ai-input-wrap:focus-within {
+  border-color: #2d483a;
+  box-shadow: 0 0 0 3px rgba(45, 72, 58, 0.12);
+  background: #ffffff;
+}
+
+.roamly-ai-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: #18261f;
+  padding: 8px 4px;
+}
+
+.roamly-ai-input::placeholder {
+  color: #9cb1a5;
+  font-size: 13px;
+}
+
+.roamly-ai-send-btn {
+  background: #2d483a;
+  color: #ffffff;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.roamly-ai-send-btn:hover:not(:disabled) {
+  background: #18261f;
+  transform: scale(1.05);
+}
+
+.roamly-ai-send-btn:disabled {
+  background: #d4cec4;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.roamly-ai-footer-note {
+  font-size: 10.5px;
+  color: #8c968f;
+  text-align: center;
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+  .roamly-ai-launcher {
+    bottom: 16px;
+    right: 16px;
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+
+
+  .roamly-ai-panel {
+    bottom: 0;
+    right: 0;
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .roamly-ai-header {
+    border-radius: 0;
+  }
+}

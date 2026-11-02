@@ -1,0 +1,181 @@
+// Curated initial reviews from verified travelers across Indian and global journeys
+// Includes Tripoto-inspired visual storytelling: photo galleries, duration, budget, and insider tips
+export const initialReviews = [
+  {
+    id: "rev-1",
+    destinationId: "munnar",
+    destinationName: "Munnar",
+    author: "Ananya Sharma",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80",
+    location: "Bengaluru, India",
+    rating: 5,
+    title: "Kolukkumalai sunrise above misty tea gardens was once in a lifetime!",
+    comment: "The 4x4 jeep ride at 4:30 AM was bumpy, but reaching the peak above the endless sea of clouds while sipping freshly brewed cardamom tea was pure magic. Stayed at a quiet plantation homestay in Chinnakanal.",
+    mood: "Peace",
+    date: "October 2024",
+    duration: "3 Days / 2 Nights",
+    budget: "₹9,500 / person",
+    season: "October (Post-Monsoon)",
+    insiderTip: "Book your sunrise jeep directly through your homestay host rather than town touts — you get the earliest departure and beat the crowd to the summit ridge.",
+    images: [
+      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=800&q=80"
+    ],
+    helpfulCount: 42,
+    verified: true
+  },
+  {
+    id: "rev-2",
+    destinationId: "jaipur",
+    destinationName: "Jaipur",
+    author: "Rohan Varma",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+    location: "Delhi NCR, India",
+    rating: 5,
+    title: "Amer Fort at twilight and authentic ghewar in the walled city",
+    comment: "Watching the twilight glow wrap around the yellow stone ramparts of Amer Fort was majestic. Don't skip the stepwell (Panna Meena ka Kund) at 7:00 AM before tour buses arrive.",
+    mood: "Culture",
+    date: "November 2024",
+    duration: "2 Days / 1 Night",
+    budget: "₹6,800 / person",
+    season: "November (Pleasant Winter)",
+    insiderTip: "Climb Nahargarh Fort around 5:00 PM for the sunset view over the entire Jaipur skyline, then head to LMB in Johari Bazaar for hot pyaz kachoris.",
+    images: [
+      "https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=800&q=80"
+    ],
+    helpfulCount: 38,
+    verified: true
+  },
+  {
+    id: "rev-3",
+    destinationId: "varanasi",
+    destinationName: "Varanasi",
+    author: "Sinchita Sinha",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+    location: "Kolkata, India",
+    rating: 5,
+    title: "The eternal river: Subah-e-Banaras and magical Dashashwamedh Aarti",
+    comment: "Varanasi touches the soul like no other city in the world. Taking a wooden hand-rowed boat across the Ganges at 5:30 AM while temple bells chimed along the ghats was unforgettable.",
+    mood: "Spiritual",
+    date: "January 2025",
+    duration: "3 Days / 2 Nights",
+    budget: "₹7,200 / person",
+    season: "January (Misty Winter)",
+    insiderTip: "Take a wooden hand-rowed boat instead of noisy motorboats for the morning ride from Assi to Manikarnika Ghat — the silent glide on the water is surreal.",
+    images: [
+      "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=800&q=80"
+    ],
+    helpfulCount: 56,
+    verified: true
+  },
+  {
+    id: "rev-4",
+    destinationId: "spiti",
+    destinationName: "Spiti Valley",
+    author: "Vikram Sengupta",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
+    location: "Kolkata, India",
+    rating: 5,
+    title: "Stargazing under the Milky Way at Dhankar and sending postcards from Hikkim",
+    comment: "Breathtaking in every sense. Take 2 full days to acclimatize in Kaza before hiking. Mailing postcards to family from the world's highest post office in Hikkim (14,567 ft) was a bucket-list memory.",
+    mood: "Adventure",
+    date: "August 2024",
+    duration: "7 Days / 6 Nights",
+    budget: "₹22,000 / person",
+    season: "August (Clear High Passes)",
+    insiderTip: "Keep diamox and camphor handy for high-altitude passes, and carry cash as cellular networks and ATMs are nonexistent beyond Kaza.",
+    images: [
+      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80"
+    ],
+    helpfulCount: 51,
+    verified: true
+  },
+  {
+    id: "rev-5",
+    destinationId: "udaipur",
+    destinationName: "Udaipur",
+    author: "Sneha & Kabir",
+    avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80",
+    location: "Pune, India",
+    rating: 5,
+    title: "Sunset reflections on Lake Pichola and quiet evenings in old havelis",
+    comment: "The reflection of the illuminated City Palace upon the ripples of Lake Pichola at dusk feels like poetry. Staying at a heritage haveli right by Gangaur Ghat gave us the most peaceful morning views.",
+    mood: "Romance",
+    date: "December 2024",
+    duration: "3 Days / 2 Nights",
+    budget: "₹13,500 / couple",
+    season: "December (Crisp Evenings)",
+    insiderTip: "Reserve an evening waterside table at Ambrai Restaurant at least 5 days in advance — the direct line of sight to the illuminated palace is unmatched.",
+    images: [
+      "https://images.unsplash.com/photo-1567157577867-05ccb1388e66?auto=format&fit=crop&w=800&q=80"
+    ],
+    helpfulCount: 35,
+    verified: true
+  },
+  {
+    id: "rev-6",
+    destinationId: "meghalaya",
+    destinationName: "Meghalaya",
+    author: "David Lyngdoh",
+    avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=200&q=80",
+    location: "Shillong, India",
+    rating: 5,
+    title: "Double Decker living root bridges of Nongriat — an awe-inspiring trek",
+    comment: "The descent down 3,500 mossy stone steps to Nongriat tests your endurance, but dipping your feet into the crystal turquoise natural rock pools beneath the root bridges washes away every ounce of exhaustion.",
+    mood: "Nature",
+    date: "October 2024",
+    duration: "5 Days / 4 Nights",
+    budget: "₹16,000 / person",
+    season: "October (Lush Valleys)",
+    insiderTip: "Spend a night at a simple village homestay in Nongriat instead of hiking back up on the same day. You'll get the natural rainbow falls all to yourself the next morning.",
+    images: [
+      "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
+    ],
+    helpfulCount: 44,
+    verified: true
+  },
+  {
+    id: "rev-7",
+    destinationId: "ladakh",
+    destinationName: "Ladakh",
+    author: "Sonam Nimkar",
+    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=200&q=80",
+    location: "Mumbai, India",
+    rating: 5,
+    title: "Pangong Tso stillness: watching color shifts from turquoise to deep indigo",
+    comment: "No photo prepares you for the sheer silence of Pangong Lake at 14,000 feet. The color transitions from aquamarine to deep navy as the sun moves across the scree slopes.",
+    mood: "Peace",
+    date: "September 2024",
+    duration: "6 Days / 5 Nights",
+    budget: "₹28,000 / person",
+    season: "September (Autumn Gold)",
+    insiderTip: "Spend the entire first 36 hours in Leh resting with warm ginger-lemon-honey water before riding to Khardung La or Pangong — acclimatization is everything.",
+    images: [
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=800&q=80"
+    ],
+    helpfulCount: 63,
+    verified: true
+  },
+  {
+    id: "rev-8",
+    destinationId: "hampi",
+    destinationName: "Hampi",
+    author: "Sakshi Nahar",
+    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
+    location: "Bengaluru, India",
+    rating: 5,
+    title: "Bouldering landscapes and stone chariot splendour at Vitthala Temple",
+    comment: "Renting a bicycle and pedaling through the ruins of the Vijayanagara Empire felt like stepping into an open-air historical fantasy. The musical pillars at Vitthala temple are an engineering marvel.",
+    mood: "Culture",
+    date: "January 2025",
+    duration: "3 Days / 2 Nights",
+    budget: "₹6,500 / person",
+    season: "January (Cool Breeze)",
+    insiderTip: "Cross the Tungabhadra river on a coracle boat to the Sanapur / Anegundi side for sunset atop Anjanadri Hill.",
+    images: [
+      "https://www.holidaymonk.com/wp-content/uploads/2020/10/Vastuchitra_Stone-Chariot-Hampi.jpg"
+    ],
+    helpfulCount: 48,
+    verified: true
+  }
+];
