@@ -208,6 +208,16 @@ export default function Register() {
         event.preventDefault();
         setError("");
 
+        if (!form.firstName.trim()) {
+            setError("Please enter your first name.");
+            return;
+        }
+
+        if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+            setError("Please enter a valid email address.");
+            return;
+        }
+
         if (form.password.length < 8) {
             setError("Your password must contain at least 8 characters.");
             return;
@@ -218,16 +228,23 @@ export default function Register() {
             return;
         }
 
+        // Clean phone normalization: prevent duplicate +91 prefixes
+        let cleanPhone = form.phone.trim();
+        if (cleanPhone) {
+            cleanPhone = cleanPhone.replace(/^\+91[\s-]*/, "").replace(/^91[\s-]*/, "").trim();
+            if (cleanPhone.length > 0) {
+                cleanPhone = `+91 ${cleanPhone}`;
+            }
+        }
+
         setLoading(true);
 
         try {
             const result = await registerUser({
                 firstName: form.firstName.trim(),
                 lastName: form.lastName.trim(),
-                email: form.email.trim(),
-                phone: form.phone.trim()
-                    ? `+91 ${form.phone.trim()}`
-                    : "",
+                email: form.email.trim().toLowerCase(),
+                phone: cleanPhone,
                 password: form.password,
                 confirmPassword: form.confirmPassword,
                 travelPreferences: preferences

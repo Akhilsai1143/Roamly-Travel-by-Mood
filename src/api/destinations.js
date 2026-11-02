@@ -1,7 +1,6 @@
- 
 import axios from "axios";
+import { API_BASE } from "./client.js";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const API_URL = `${API_BASE}/destinations`;
 
 function getAuthConfig() {

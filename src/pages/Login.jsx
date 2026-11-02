@@ -185,11 +185,21 @@ export default function Login() {
     event.preventDefault();
 
     setError("");
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) {
+      setError("Please enter your email address.");
+      return;
+    }
+    if (!password) {
+      setError("Please enter your password.");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const result = await loginUser({
-        email: email.trim().toLowerCase(),
+        email: cleanEmail,
         password
       });
 
@@ -205,7 +215,7 @@ export default function Login() {
         });
       }
     } catch (err) {
-      setError(err.message || "Unable to log in.");
+      setError(err.message || "Unable to log in. Please check your credentials.");
     } finally {
       setLoading(false);
     }

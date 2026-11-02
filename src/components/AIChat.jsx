@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   Sparkles,
   X,
@@ -166,8 +166,16 @@ function formatInlineStyles(text = "") {
 }
 
 export default function AIChat() {
+  const location = useLocation();
   const { user, isLoggedIn } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+
+  // Hide the AI floating assistant on dedicated login, register, and admin pages
+  // so it does not obstruct forms, input fields, buttons, or mobile keyboards
+  const isAuthOrAdmin =
+    location.pathname === "/login" ||
+    location.pathname === "/register" ||
+    location.pathname.startsWith("/admin");
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [lastError, setLastError] = useState(null);
@@ -294,6 +302,10 @@ export default function AIChat() {
     ]);
     setLastError(null);
   };
+
+  if (isAuthOrAdmin) {
+    return null;
+  }
 
   return (
     <>

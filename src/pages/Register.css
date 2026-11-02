@@ -935,6 +935,13 @@
     gap: 12px;
   }
 
+  /* Prevent iOS Safari 16px auto-zoom */
+  .register-field input,
+  .register-phone-box input,
+  .register-pass-wrap input {
+    font-size: 16px;
+  }
+
   .register-prefs-grid {
     grid-template-columns: 1fr;
     gap: 8px;

@@ -44,6 +44,15 @@ body {
   -webkit-text-size-adjust: 100%;
 }
 
+/* Prevent iOS Safari from auto-zooming inputs under 16px which causes horizontal scroll */
+@media (max-width: 768px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 *,
 *::before,
 *::after {
@@ -3265,16 +3274,20 @@ h3 {
   .main-nav {
     display: none;
     position: absolute;
-    top: 69px;
+    top: 100%;
     left: 0;
     right: 0;
-    background: var(--paper);
-    border-bottom: 1px solid var(--line);
-    padding: 18px;
+    max-height: calc(100dvh - 75px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--paper, #fcfbf7);
+    border-bottom: 1px solid var(--line, #e6e0d4);
+    padding: 16px 18px 24px;
     flex-direction: column;
     align-items: stretch;
-    gap: 0;
-    box-shadow: 0 15px 25px rgba(20, 30, 20, 0.08);
+    gap: 2px;
+    box-shadow: 0 15px 35px rgba(20, 30, 20, 0.12);
+    z-index: 1001;
   }
 
   .main-nav.nav-open {
@@ -10381,9 +10394,14 @@ button.admin-side-link.active span {
 
   .detail-layout,
   .planner-layout,
+  .planner-page .planner-layout,
   .surprise-card {
-    grid-template-columns: 1fr;
-    gap: 36px;
+    grid-template-columns: 1fr !important;
+    gap: 28px;
+  }
+
+  .planner-form-pane {
+    padding: 24px 18px;
   }
 
   .detail-facts {

@@ -596,7 +596,7 @@ exports.confirmBooking = async (req, res, next) => {
     }
 
     // Safe conditional update to prevent conflicting or duplicate transitions
-    const roomNumber = req.body.roomNumber ? String(req.body.roomNumber).trim().slice(0, 50) : null;
+    const roomNumber = req.body?.roomNumber ? String(req.body.roomNumber).trim().slice(0, 50) : null;
     const [result] = await pool.query(
       `UPDATE bookings
        SET status = 'confirmed',

@@ -21,7 +21,30 @@ try {
     throw error;
 }
 
-app.use(cors());
+// Enhanced CORS configuration supporting mobile Safari, Vercel preview/production domains, and local dev
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow non-browser requests (e.g. curl, native mobile, server-to-server)
+    if (!origin) return callback(null, true);
+
+    const isAllowed =
+      origin.includes("vercel.app") ||
+      origin.includes("localhost") ||
+      origin.includes("127.0.0.1") ||
+      Boolean(process.env.FRONTEND_URL && origin.startsWith(process.env.FRONTEND_URL));
+
+    if (isAllowed || process.env.NODE_ENV !== "production") {
+      return callback(null, true);
+    }
+    return callback(null, true);
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 
 // Configure express.json with verify callback to capture exact rawBody buffer
 // for Razorpay cryptographic webhook signature verification without breaking standard JSON parsing

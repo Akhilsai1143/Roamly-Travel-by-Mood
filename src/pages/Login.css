@@ -762,6 +762,11 @@
     padding: 16px 0 24px;
   }
 
+  /* Prevent Safari iOS from auto-zooming when focusing inputs */
+  .login-field input {
+    font-size: 16px;
+  }
+
   .login-mobile-brand {
     display: inline-flex;
   }

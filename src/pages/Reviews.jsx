@@ -25,8 +25,9 @@ import {
 import { useAuth } from "../context/AuthContext.jsx";
 import { destinations } from "../data/destinations.js";
 import { initialReviews } from "../data/reviews.js";
+import { API_BASE } from "../api/client.js";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const API_URL = API_BASE;
 
 export default function Reviews() {
   const [params] = useSearchParams();

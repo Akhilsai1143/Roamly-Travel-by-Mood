@@ -1,8 +1,22 @@
 import { io } from "socket.io-client";
+import { API_BASE } from "../api/client.js";
 
 let socketInstance = null;
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
+function resolveSocketUrl() {
+  if (import.meta.env.VITE_SOCKET_URL) {
+    return import.meta.env.VITE_SOCKET_URL;
+  }
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL.replace(/\/api\/?$/, "");
+  }
+  if (import.meta.env.PROD) {
+    return typeof window !== "undefined" ? window.location.origin : "";
+  }
+  return "http://localhost:5000";
+}
+
+const SOCKET_URL = resolveSocketUrl();
 
 /**
  * Get or create authenticated socket connection

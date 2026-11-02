@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
         () => localStorage.getItem("roamly-token")
     );
 
-    // Validate active session on initial app load
+    // Validate active session on initial app load without kicking user out on network drops
     useEffect(() => {
         const savedToken = localStorage.getItem("roamly-token");
         if (savedToken) {
@@ -33,9 +33,20 @@ export function AuthProvider({ children }) {
                         localStorage.setItem("roamly-user", JSON.stringify(freshUser));
                     }
                 })
-                .catch(() => {
-                    // Stale or expired token
-                    logout();
+                .catch((err) => {
+                    // Only log out if backend explicitly confirms the token is invalid (HTTP 401/403)
+                    if (
+                        err?.status === 401 ||
+                        err?.status === 403 ||
+                        err?.response?.status === 401 ||
+                        err?.response?.status === 403 ||
+                        err?.message?.includes("unauthorized")
+                    ) {
+                        logout();
+                    } else {
+                        // Keeps cached session intact during offline browsing, mobile network drops, or cloud cold starts
+                        console.warn("Unable to refresh user profile from backend, maintaining cached session:", err?.message);
+                    }
                 });
         }
     }, []);
