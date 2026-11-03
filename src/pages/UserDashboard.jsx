@@ -510,13 +510,28 @@ export default function UserDashboard({ savedCount = 0, savedIds = [], onToggleS
 
       setBookings(rows);
 
-      if (statsRes) {
+      // Derive authentic stats directly from the current user's actual bookings list
+      const calculatedTotal = rows.length;
+      const calculatedPending = rows.filter((b) => b.status === "pending").length;
+      const calculatedConfirmed = rows.filter((b) => b.status === "confirmed").length;
+      const calculatedRejected = rows.filter((b) => b.status === "rejected").length;
+      const calculatedCancelled = rows.filter((b) => b.status === "cancelled").length;
+
+      if (statsRes && Number(statsRes.total) === calculatedTotal) {
         setStats({
           total: Number(statsRes.total) || 0,
           pending: Number(statsRes.pending) || 0,
           confirmed: Number(statsRes.confirmed) || 0,
           rejected: Number(statsRes.rejected) || 0,
           cancelled: Number(statsRes.cancelled) || 0
+        });
+      } else {
+        setStats({
+          total: calculatedTotal,
+          pending: calculatedPending,
+          confirmed: calculatedConfirmed,
+          rejected: calculatedRejected,
+          cancelled: calculatedCancelled
         });
       }
     } catch (err) {

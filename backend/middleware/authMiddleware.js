@@ -57,6 +57,7 @@ async function protect(req, res, next) {
                 // Construct basic user from decoded token payload
                 req.user = {
                     id: decoded.id,
+                    email: decoded.email || null,
                     role: decoded.role || "user",
                     is_active: 1
                 };

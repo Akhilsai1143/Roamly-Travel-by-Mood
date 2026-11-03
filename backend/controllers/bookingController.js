@@ -524,11 +524,12 @@ exports.createBooking = async (req, res, next) => {
 // ============================================================================
 exports.getMyBookings = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id ? Number(req.user.id) : null;
+    const userEmail = req.user?.email ? String(req.user.email).trim().toLowerCase() : "";
     const statusFilter = req.query.status ? String(req.query.status).toLowerCase() : null;
 
-    let whereClause = "(b.user_id = ? OR (b.contact_email IS NOT NULL AND LOWER(b.contact_email) = LOWER(?)))";
-    const params = [userId, req.user.email];
+    let whereClause = "(b.user_id = ? OR (b.contact_email IS NOT NULL AND LOWER(b.contact_email) = ?))";
+    const params = [userId || -1, userEmail || ""];
 
     if (statusFilter && statusFilter !== "all" && VALID_STATUSES.includes(statusFilter)) {
       whereClause += " AND b.status = ?";
@@ -548,9 +549,20 @@ exports.getMyBookings = async (req, res, next) => {
     });
   } catch (error) {
     if (isDbConnectionError(error) || error.code === "ER_NO_SUCH_TABLE") {
-      const userBookings = fallbackBookings.filter(
-        (b) => Number(b.user_id) === Number(req.user.id) || (b.contact_email && b.contact_email.toLowerCase() === (req.user.email || "").toLowerCase())
-      );
+      const userId = req.user?.id ? Number(req.user.id) : null;
+      const userEmail = req.user?.email ? String(req.user.email).trim().toLowerCase() : "";
+
+      let userBookings = fallbackBookings.filter((b) => {
+        const matchesId = userId && Number(b.user_id) === userId;
+        const matchesEmail = userEmail && b.contact_email && b.contact_email.trim().toLowerCase() === userEmail;
+        return matchesId || matchesEmail;
+      });
+
+      const statusFilter = req.query.status ? String(req.query.status).toLowerCase() : null;
+      if (statusFilter && statusFilter !== "all" && VALID_STATUSES.includes(statusFilter)) {
+        userBookings = userBookings.filter((b) => b.status === statusFilter);
+      }
+
       return res.json({ bookings: userBookings.map(formatBookingRow), count: userBookings.length });
     }
     next(error);
@@ -567,10 +579,13 @@ exports.getMyBookingById = async (req, res, next) => {
       return res.status(400).json({ message: "Invalid booking ID." });
     }
 
+    const userId = req.user?.id ? Number(req.user.id) : null;
+    const userEmail = req.user?.email ? String(req.user.email).trim().toLowerCase() : "";
+
     try {
       const [rows] = await pool.query(
-        getBookingBaseQuery("b.id = ? AND (b.user_id = ? OR (b.contact_email IS NOT NULL AND LOWER(b.contact_email) = LOWER(?)))"),
-        [bookingId, req.user.id, req.user.email]
+        getBookingBaseQuery("b.id = ? AND (b.user_id = ? OR (b.contact_email IS NOT NULL AND LOWER(b.contact_email) = ?))"),
+        [bookingId, userId || -1, userEmail || ""]
       );
 
       if (rows.length > 0) {
@@ -585,7 +600,8 @@ exports.getMyBookingById = async (req, res, next) => {
     const b = fallbackBookings.find(
       (item) =>
         Number(item.id) === bookingId &&
-        (Number(item.user_id) === Number(req.user.id) || (item.contact_email && item.contact_email.toLowerCase() === (req.user.email || "").toLowerCase()))
+        ((userId && Number(item.user_id) === userId) ||
+         (userEmail && item.contact_email && item.contact_email.trim().toLowerCase() === userEmail))
     );
 
     if (b) {
@@ -605,6 +621,9 @@ exports.getMyBookingById = async (req, res, next) => {
 // ============================================================================
 exports.getMyStats = async (req, res, next) => {
   try {
+    const userId = req.user?.id ? Number(req.user.id) : null;
+    const userEmail = req.user?.email ? String(req.user.email).trim().toLowerCase() : "";
+
     const [rows] = await pool.query(
       `SELECT
         COUNT(*) AS total,
@@ -613,8 +632,8 @@ exports.getMyStats = async (req, res, next) => {
         SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) AS rejected,
         SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled
        FROM bookings
-       WHERE (user_id = ? OR (contact_email IS NOT NULL AND LOWER(contact_email) = LOWER(?)))`,
-      [req.user.id, req.user.email]
+       WHERE (user_id = ? OR (contact_email IS NOT NULL AND LOWER(contact_email) = ?))`,
+      [userId || -1, userEmail || ""]
     );
 
     const stats = rows[0] || {};
@@ -628,11 +647,20 @@ exports.getMyStats = async (req, res, next) => {
     });
   } catch (error) {
     if (isDbConnectionError(error) || error.code === "ER_NO_SUCH_TABLE") {
-      const total = fallbackBookings.length;
-      const pending = fallbackBookings.filter((b) => b.status === "pending").length;
-      const confirmed = fallbackBookings.filter((b) => b.status === "confirmed").length;
-      const rejected = fallbackBookings.filter((b) => b.status === "rejected").length;
-      const cancelled = fallbackBookings.filter((b) => b.status === "cancelled").length;
+      const userId = req.user?.id ? Number(req.user.id) : null;
+      const userEmail = req.user?.email ? String(req.user.email).trim().toLowerCase() : "";
+
+      const userBookings = fallbackBookings.filter((b) => {
+        const matchesId = userId && Number(b.user_id) === userId;
+        const matchesEmail = userEmail && b.contact_email && b.contact_email.trim().toLowerCase() === userEmail;
+        return matchesId || matchesEmail;
+      });
+
+      const total = userBookings.length;
+      const pending = userBookings.filter((b) => b.status === "pending").length;
+      const confirmed = userBookings.filter((b) => b.status === "confirmed").length;
+      const rejected = userBookings.filter((b) => b.status === "rejected").length;
+      const cancelled = userBookings.filter((b) => b.status === "cancelled").length;
       return res.json({ total, pending, confirmed, rejected, cancelled });
     }
     next(error);

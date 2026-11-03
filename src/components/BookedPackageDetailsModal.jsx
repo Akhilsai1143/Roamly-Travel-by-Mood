@@ -187,28 +187,28 @@ export default function BookedPackageDetailsModal({ booking, onClose, onPayNow, 
 
         {/* QUICK SERVICE HIGHLIGHTS */}
         <div className="pkg-services-strip">
-          <div className="pkg-service-item">
+          <div className="pkg-service-item" title={pkg.accommodationType || "Curated Verified Stays"}>
             <Bed size={18} className="svc-icon" />
             <div>
               <small>Accommodation</small>
               <strong>{pkg.accommodationType || "Curated Verified Stays"}</strong>
             </div>
           </div>
-          <div className="pkg-service-item">
+          <div className="pkg-service-item" title={pkg.mealPlan || "Daily Breakfast Included"}>
             <Utensils size={18} className="svc-icon" />
             <div>
               <small>Meal Plan</small>
               <strong>{pkg.mealPlan || "Daily Breakfast Included"}</strong>
             </div>
           </div>
-          <div className="pkg-service-item">
+          <div className="pkg-service-item" title={pkg.transportType || "Private AC Vehicle"}>
             <Car size={18} className="svc-icon" />
             <div>
               <small>Transport</small>
               <strong>{pkg.transportType || "Private AC Vehicle"}</strong>
             </div>
           </div>
-          <div className="pkg-service-item">
+          <div className="pkg-service-item" title={pkg.pickupDrop || "Airport / Station Transfers"}>
             <Navigation size={18} className="svc-icon" />
             <div>
               <small>Transfers</small>
