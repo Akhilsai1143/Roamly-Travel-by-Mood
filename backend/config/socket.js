@@ -6,10 +6,14 @@ let io = null;
 function initSocket(server) {
   io = new Server(server, {
     cors: {
-      origin: "*",
+      origin: (origin, callback) => {
+        // Allow all incoming origins for real-time mobile and web clients
+        callback(null, true);
+      },
       methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
       credentials: true
-    }
+    },
+    transports: ["websocket", "polling"]
   });
 
   // Authenticate socket connections using JWT
