@@ -4,16 +4,26 @@ import { API_BASE } from "../api/client.js";
 let socketInstance = null;
 
 function resolveSocketUrl() {
-  if (import.meta.env.VITE_SOCKET_URL) {
-    return import.meta.env.VITE_SOCKET_URL;
+  const socketEnv = import.meta.env.VITE_SOCKET_URL;
+  const apiEnv = import.meta.env.VITE_API_URL;
+
+  // On remote/production domain
+  if (
+    typeof window !== "undefined" &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1"
+  ) {
+    if (socketEnv && !socketEnv.includes("localhost") && !socketEnv.includes("127.0.0.1")) {
+      return socketEnv;
+    }
+    if (apiEnv && !apiEnv.includes("localhost") && !apiEnv.includes("127.0.0.1")) {
+      return apiEnv.replace(/\/api\/?$/, "");
+    }
+    return window.location.origin;
   }
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL.replace(/\/api\/?$/, "");
-  }
-  if (import.meta.env.PROD) {
-    return typeof window !== "undefined" ? window.location.origin : "";
-  }
-  return "http://localhost:5000";
+
+  // In local development
+  return socketEnv || (apiEnv ? apiEnv.replace(/\/api\/?$/, "") : "http://localhost:5000");
 }
 
 const SOCKET_URL = resolveSocketUrl();

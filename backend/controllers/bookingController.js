@@ -3,6 +3,13 @@ const { isDbConnectionError } = pool;
 const { notifyBookingCreated, notifyBookingStatusUpdated } = require("../config/socket");
 const crypto = require("crypto");
 
+let fallbackBookings = [];
+try {
+  fallbackBookings = require("../data/bookings.json");
+} catch {
+  fallbackBookings = [];
+}
+
 const VALID_STATUSES = [
   "pending",
   "confirmed",
@@ -446,7 +453,10 @@ exports.getMyBookings = async (req, res, next) => {
     });
   } catch (error) {
     if (isDbConnectionError(error) || error.code === "ER_NO_SUCH_TABLE") {
-      return res.json({ bookings: [], count: 0 });
+      const userBookings = fallbackBookings.filter(
+        (b) => Number(b.user_id) === Number(req.user.id) || (b.contact_email && b.contact_email.toLowerCase() === (req.user.email || "").toLowerCase())
+      );
+      return res.json({ bookings: userBookings.map(formatBookingRow), count: userBookings.length });
     }
     next(error);
   }
@@ -507,7 +517,12 @@ exports.getMyStats = async (req, res, next) => {
     });
   } catch (error) {
     if (isDbConnectionError(error) || error.code === "ER_NO_SUCH_TABLE") {
-      return res.json({ total: 0, pending: 0, confirmed: 0, rejected: 0, cancelled: 0 });
+      const total = fallbackBookings.length;
+      const pending = fallbackBookings.filter((b) => b.status === "pending").length;
+      const confirmed = fallbackBookings.filter((b) => b.status === "confirmed").length;
+      const rejected = fallbackBookings.filter((b) => b.status === "rejected").length;
+      const cancelled = fallbackBookings.filter((b) => b.status === "cancelled").length;
+      return res.json({ total, pending, confirmed, rejected, cancelled });
     }
     next(error);
   }
@@ -558,7 +573,21 @@ exports.getAllBookings = async (req, res, next) => {
     });
   } catch (error) {
     if (isDbConnectionError(error) || error.code === "ER_NO_SUCH_TABLE") {
-      return res.json({ bookings: [], count: 0 });
+      let list = [...fallbackBookings];
+      const search = String(req.query.search || "").trim().toLowerCase();
+      const status = String(req.query.status || "all").trim().toLowerCase();
+      if (status && status !== "all") {
+        list = list.filter((b) => b.status === status);
+      }
+      if (search) {
+        list = list.filter((b) =>
+          (b.booking_reference && b.booking_reference.toLowerCase().includes(search)) ||
+          (b.contact_name && b.contact_name.toLowerCase().includes(search)) ||
+          (b.contact_email && b.contact_email.toLowerCase().includes(search)) ||
+          (b.destination_name_snapshot && b.destination_name_snapshot.toLowerCase().includes(search))
+        );
+      }
+      return res.json({ bookings: list.map(formatBookingRow), count: list.length });
     }
     next(error);
   }
@@ -590,7 +619,12 @@ exports.getAdminStats = async (req, res, next) => {
     });
   } catch (error) {
     if (isDbConnectionError(error) || error.code === "ER_NO_SUCH_TABLE") {
-      return res.json({ total: 0, pending: 0, confirmed: 0, rejected: 0, cancelled: 0 });
+      const total = fallbackBookings.length;
+      const pending = fallbackBookings.filter((b) => b.status === "pending").length;
+      const confirmed = fallbackBookings.filter((b) => b.status === "confirmed").length;
+      const rejected = fallbackBookings.filter((b) => b.status === "rejected").length;
+      const cancelled = fallbackBookings.filter((b) => b.status === "cancelled").length;
+      return res.json({ total, pending, confirmed, rejected, cancelled });
     }
     next(error);
   }

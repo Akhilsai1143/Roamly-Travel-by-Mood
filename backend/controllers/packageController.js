@@ -1,6 +1,16 @@
 const pool = require("../config/db");
 const { isDbConnectionError } = pool;
 
+let fallbackPackages = [];
+let fallbackServices = [];
+try {
+  fallbackPackages = require("../data/travel_packages.json");
+  fallbackServices = require("../data/package_partner_services.json");
+} catch {
+  fallbackPackages = [];
+  fallbackServices = [];
+}
+
 // Safe helper to parse JSON fields
 function safeJsonParse(data, fallback = []) {
   if (!data) return fallback;
@@ -159,10 +169,26 @@ exports.getPublicPackages = async (req, res) => {
     });
   } catch (error) {
     if (isDbConnectionError(error) || error.code === "ER_NO_SUCH_TABLE") {
+      let filtered = [...fallbackPackages];
+      const { tier, featured } = req.query;
+      if (tier && ["standard", "comfort", "premium"].includes(tier.toLowerCase())) {
+        filtered = filtered.filter((p) => p.tier === tier.toLowerCase());
+      }
+      if (featured === "true" || featured === "1") {
+        filtered = filtered.filter((p) => Boolean(p.is_featured));
+      }
+
+      const servicesByPackage = {};
+      fallbackServices.forEach((s) => {
+        if (!servicesByPackage[s.package_id]) servicesByPackage[s.package_id] = [];
+        servicesByPackage[s.package_id].push(s);
+      });
+
+      const formatted = filtered.map((pkg) => formatPackage(pkg, servicesByPackage[pkg.id] || []));
       return res.json({
         success: true,
-        count: 0,
-        packages: []
+        count: formatted.length,
+        packages: formatted
       });
     }
     console.error("Error fetching public packages:", error);
@@ -296,6 +322,28 @@ exports.getAllPackagesAdmin = async (req, res) => {
       packages: formatted
     });
   } catch (error) {
+    if (isDbConnectionError(error) || error.code === "ER_NO_SUCH_TABLE") {
+      const servicesByPackage = {};
+      fallbackServices.forEach((s) => {
+        if (!servicesByPackage[s.package_id]) servicesByPackage[s.package_id] = [];
+        servicesByPackage[s.package_id].push(s);
+      });
+
+      const formatted = fallbackPackages.map((pkg) => {
+        const pkgFormatted = formatPackage(pkg, servicesByPackage[pkg.id] || []);
+        return {
+          ...pkgFormatted,
+          bookingsCount: 0,
+          travelersAccommodated: 0,
+          totalRevenue: 0
+        };
+      });
+
+      return res.json({
+        success: true,
+        packages: formatted
+      });
+    }
     console.error("Error fetching admin packages:", error);
     res.status(500).json({
       success: false,

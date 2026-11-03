@@ -1,4 +1,6 @@
 const pool = require("../config/db");
+const { isDbConnectionError } = pool;
+const memoryUserStore = require("../services/memoryUserStore");
 
 // Helper to safely format user row (ensures passwords/hashes are never exposed)
 function formatUserRow(row) {
@@ -56,6 +58,16 @@ exports.getUserStats = async (req, res) => {
             recentlyActiveCount: Number(stats.recentlyActiveCount) || 0
         });
     } catch (error) {
+        if (isDbConnectionError(error) || error.code === "ER_NO_SUCH_TABLE") {
+            const all = memoryUserStore.getAll().filter((u) => !u.deleted_at);
+            return res.status(200).json({
+                totalUsers: all.length,
+                activeUsers: all.filter((u) => u.is_active).length,
+                inactiveUsers: all.filter((u) => !u.is_active).length,
+                adminCount: all.filter((u) => u.role === "admin").length,
+                recentlyActiveCount: all.length
+            });
+        }
         console.error("Error fetching user stats:", error);
         return res.status(500).json({
             message: "Failed to retrieve user statistics."
@@ -156,6 +168,37 @@ exports.getUsers = async (req, res) => {
             }
         });
     } catch (error) {
+        if (isDbConnectionError(error) || error.code === "ER_NO_SUCH_TABLE") {
+            let all = memoryUserStore.getAll().filter((u) => !u.deleted_at);
+            const search = String(req.query.search || "").trim().toLowerCase();
+            const role = String(req.query.role || "all").trim().toLowerCase();
+            const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+            const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 10));
+            const offset = (page - 1) * limit;
+
+            if (search) {
+                all = all.filter((u) => (u.name && u.name.toLowerCase().includes(search)) || (u.email && u.email.toLowerCase().includes(search)));
+            }
+            if (role === "user" || role === "admin") {
+                all = all.filter((u) => u.role === role);
+            }
+
+            const totalItems = all.length;
+            const totalPages = Math.ceil(totalItems / limit) || 1;
+            const paged = all.slice(offset, offset + limit);
+
+            return res.status(200).json({
+                users: paged.map(formatUserRow),
+                pagination: {
+                    page,
+                    limit,
+                    totalItems,
+                    totalPages,
+                    hasNextPage: page < totalPages,
+                    hasPreviousPage: page > 1
+                }
+            });
+        }
         console.error("Error fetching users:", error);
         return res.status(500).json({
             message: "Failed to retrieve user accounts."

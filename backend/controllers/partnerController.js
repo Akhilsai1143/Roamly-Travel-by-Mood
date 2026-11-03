@@ -1,4 +1,12 @@
 const pool = require("../config/db");
+const { isDbConnectionError } = pool;
+
+let fallbackPartners = [];
+try {
+  fallbackPartners = require("../data/partners.json");
+} catch {
+  fallbackPartners = [];
+}
 
 /**
  * GET /api/partners
@@ -73,6 +81,27 @@ exports.getAllPartners = async (req, res) => {
       }))
     });
   } catch (error) {
+    if (isDbConnectionError(error) || error.code === "ER_NO_SUCH_TABLE") {
+      return res.json({
+        success: true,
+        count: fallbackPartners.length,
+        partners: fallbackPartners.map((r) => ({
+          id: r.id,
+          partnerCode: r.partner_code,
+          name: r.name,
+          contactPerson: r.contact_person,
+          email: r.email,
+          phone: r.phone,
+          serviceCategory: r.service_category,
+          destinationId: r.destination_id,
+          operatingArea: r.operating_area,
+          status: r.status,
+          linkedPackagesCount: 2,
+          totalServicesCount: 2,
+          createdAt: r.created_at
+        }))
+      });
+    }
     console.error("Error fetching partners:", error);
     res.status(500).json({
       success: false,

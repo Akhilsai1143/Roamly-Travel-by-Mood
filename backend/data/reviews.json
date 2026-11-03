@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "user_id": 1,
+    "destination_id": 2,
+    "destination_name": "Jaipur",
+    "rating": 5,
+    "title": "Majestic Pink City Sunrise",
+    "comment": "Watching the morning sun illuminate the Hawa Mahal was pure magic. The local lassi near MI Road is unbeatable!",
+    "mood": "Culture",
+    "duration": "4 Days",
+    "budget": "₹12,000",
+    "season": "November",
+    "insider_tip": "Visit Amer Fort before 9 AM to escape the midday crowds and experience the courtyard in silence.",
+    "photo_url": null,
+    "helpful_count": 1,
+    "created_at": "2026-10-23T09:46:22.000Z",
+    "updated_at": "2026-10-23T09:46:31.000Z"
+  }
+]

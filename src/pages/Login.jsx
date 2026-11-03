@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Compass,
   Eye,
@@ -180,6 +180,7 @@ export default function Login() {
 
   const { saveSession } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -205,12 +206,14 @@ export default function Login() {
 
       saveSession(result);
 
-      if (result.user.role === "admin") {
-        navigate("/admin/destinations", {
+      const fromPath = location.state?.from;
+
+      if (result.user?.role === "admin") {
+        navigate(fromPath && fromPath.startsWith("/admin") ? fromPath : "/admin/bookings", {
           replace: true
         });
       } else {
-        navigate("/user/dashboard", {
+        navigate(fromPath && !fromPath.startsWith("/admin") ? fromPath : "/user/dashboard", {
           replace: true
         });
       }

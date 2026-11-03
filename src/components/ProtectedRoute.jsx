@@ -1,4 +1,3 @@
- 
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 
@@ -21,7 +20,7 @@ export default function ProtectedRoute({ adminOnly = false }) {
     }
 
     if (!adminOnly && isAdmin) {
-        return <Navigate to="/admin/destinations" replace />;
+        return <Navigate to="/admin/bookings" replace />;
     }
 
     return <Outlet />;

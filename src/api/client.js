@@ -2,16 +2,41 @@ import axios from "axios";
 
 /**
  * Resolves the API Base URL intelligently across local and production environments:
- * 1. Explicit environment variable VITE_API_URL (e.g. from Vercel Project Settings)
- * 2. In production without VITE_API_URL: defaults to '/api' so requests are sent to the
- *    same origin (avoiding mixed-content and CORS issues, routed via vercel.json rewrites)
- * 3. In development: defaults to 'http://localhost:5000/api'
+ * 1. On remote/production domains (e.g. *.vercel.app or custom domains):
+ *    - Rejects any env URL containing localhost or 127.0.0.1.
+ *    - Uses an explicit remote HTTPS API URL if provided (e.g. Render/Railway).
+ *    - Defaults to same-origin '/api' (routed via vercel.json rewrites).
+ * 2. In local development (localhost / 127.0.0.1):
+ *    - Uses VITE_API_URL or defaults to 'http://localhost:5000/api'.
  */
 export function resolveApiBase() {
   const envUrl = import.meta.env.VITE_API_URL;
+
+  // Remote browser environment check (mobile, tablet, public web)
+  if (
+    typeof window !== "undefined" &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1" &&
+    window.location.hostname !== "0.0.0.0"
+  ) {
+    if (
+      envUrl &&
+      typeof envUrl === "string" &&
+      envUrl.trim() &&
+      !envUrl.includes("localhost") &&
+      !envUrl.includes("127.0.0.1")
+    ) {
+      return envUrl.trim().replace(/\/+$/, "");
+    }
+    // Always use same-origin /api in production to avoid mixed-content and CORS
+    return "/api";
+  }
+
+  // Local development
   if (envUrl && typeof envUrl === "string" && envUrl.trim()) {
     return envUrl.trim().replace(/\/+$/, "");
   }
+
   return import.meta.env.PROD ? "/api" : "http://localhost:5000/api";
 }
 
@@ -55,7 +80,7 @@ export function formatApiError(error) {
 
 const apiClient = axios.create({
   baseURL: API_BASE,
-  // 45-second timeout to accommodate cloud host cold-starts (e.g. Render / Railway free tier)
+  // 45-second timeout to accommodate cloud host cold-starts
   timeout: 45000,
   headers: {
     "Content-Type": "application/json",
@@ -78,8 +103,11 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      // Token is expired or invalidated on server
+    const requestUrl = error.config?.url || "";
+    const isAuthAttempt = requestUrl.includes("/auth/login") || requestUrl.includes("/auth/register");
+
+    if (error.response && error.response.status === 401 && !isAuthAttempt) {
+      // Existing active token is expired or invalidated
       const currentToken = localStorage.getItem("roamly-token");
       if (currentToken) {
         localStorage.removeItem("roamly-token");

@@ -188,7 +188,8 @@ export default function App() {
         "/admin/destinations",
         "/admin/bookings",
         "/admin/users",
-        "/user/dashboard"
+        "/user/dashboard",
+        "/dashboard"
     ].includes(location.pathname) || location.pathname.startsWith("/admin");
 
     return (
@@ -307,6 +308,10 @@ export default function App() {
                                 element={<AdminBookings />}
                             />
                             <Route
+                                path="/admin/dashboard"
+                                element={<AdminBookings />}
+                            />
+                            <Route
                                 path="/admin/bookings"
                                 element={<AdminBookings />}
                             />
@@ -339,6 +344,16 @@ export default function App() {
                         <Route element={<ProtectedRoute />}>
                             <Route
                                 path="/user/dashboard"
+                                element={
+                                    <UserDashboard
+                                        savedCount={savedIds.length}
+                                        savedIds={savedIds}
+                                        onToggleSave={toggleSaved}
+                                    />
+                                }
+                            />
+                            <Route
+                                path="/dashboard"
                                 element={
                                     <UserDashboard
                                         savedCount={savedIds.length}

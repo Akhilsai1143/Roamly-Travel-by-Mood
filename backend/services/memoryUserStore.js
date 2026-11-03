@@ -1,44 +1,43 @@
 // Resilient in-memory fallback user store for serverless/preview environments
-// when MySQL is unreachable or unconfigured.
+// when MySQL is unreachable or unconfigured. Pre-seeded with all existing production accounts.
 
 const memoryUsersByEmail = new Map();
 const memoryUsersById = new Map();
 
-// Seed default administrator and demo user
-const seedUsers = [
-  {
-    id: 1,
-    name: "Roamly Administrator",
-    first_name: "Roamly",
-    last_name: "Admin",
-    email: "admin@roamly.com",
-    phone: "+91 9876543210",
-    travel_preferences: ["Nature & Mountains", "Adventure", "Beaches"],
-    // Hash for 'Admin@123'
-    password: "$2b$10$92BxFV9OUNyBOGEt5gFGu.RE9j0jyY1FasRsY5dddvyK2LRB8LUtO",
-    role: "admin",
-    is_active: 1,
-    created_at: new Date().toISOString()
-  },
-  {
-    id: 2,
-    name: "Demo Traveler",
-    first_name: "Demo",
-    last_name: "Traveler",
-    email: "demo@roamly.com",
-    phone: "+91 9123456780",
-    travel_preferences: ["Beaches", "Peace"],
-    // Hash for 'Demo@1234'
-    password: "$2b$10$5t11VUXUb3/vRxsMksWXJuEstuEGfO81bCyCipA5fvQfZMsEfSvAe",
-    role: "user",
-    is_active: 1,
-    created_at: new Date().toISOString()
-  }
-];
+let seedUsers = [];
+try {
+  seedUsers = require("../data/users.json");
+} catch (err) {
+  seedUsers = [];
+}
+
+// Fallback seed admin & demo if users.json is unavailable
+if (!seedUsers || seedUsers.length === 0) {
+  seedUsers = [
+    {
+      id: 2,
+      name: "Roamly Admin",
+      first_name: "Roamly",
+      last_name: "Admin",
+      email: "admin@roamly.com",
+      password: "$2b$12$ygmbu3ij5ZV2SJAd668NAediJu56ajQcIK2fbpuMPMum5H07/oehy", // Admin@123
+      role: "admin",
+      is_active: 1
+    }
+  ];
+}
 
 seedUsers.forEach((u) => {
-  memoryUsersByEmail.set(u.email.toLowerCase(), u);
-  memoryUsersById.set(u.id, u);
+  if (u && u.email) {
+    const normalized = {
+      ...u,
+      id: Number(u.id),
+      role: u.role || "user",
+      is_active: u.is_active !== undefined ? u.is_active : 1
+    };
+    memoryUsersByEmail.set(normalized.email.toLowerCase(), normalized);
+    memoryUsersById.set(normalized.id, normalized);
+  }
 });
 
 module.exports = {
@@ -60,12 +59,16 @@ module.exports = {
   save(user) {
     const userToSave = {
       ...user,
-      id: user.id || Date.now(),
+      id: Number(user.id || Date.now()),
       created_at: user.created_at || new Date().toISOString()
     };
     const emailKey = String(userToSave.email).trim().toLowerCase();
     memoryUsersByEmail.set(emailKey, userToSave);
     memoryUsersById.set(userToSave.id, userToSave);
     return userToSave;
+  },
+
+  getAll() {
+    return Array.from(memoryUsersById.values());
   }
 };
