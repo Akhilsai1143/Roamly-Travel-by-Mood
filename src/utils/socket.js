@@ -13,17 +13,30 @@ function resolveSocketUrl() {
     window.location.hostname !== "localhost" &&
     window.location.hostname !== "127.0.0.1"
   ) {
+    // If a dedicated WebSocket server is explicitly specified via VITE_SOCKET_URL
     if (socketEnv && !socketEnv.includes("localhost") && !socketEnv.includes("127.0.0.1")) {
       return socketEnv;
     }
-    if (apiEnv && !apiEnv.includes("localhost") && !apiEnv.includes("127.0.0.1")) {
+
+    // If an external backend server is specified that is not hosted on Vercel serverless
+    if (
+      apiEnv &&
+      !apiEnv.includes("localhost") &&
+      !apiEnv.includes("127.0.0.1") &&
+      !apiEnv.includes(".vercel.app") &&
+      !apiEnv.startsWith("/")
+    ) {
       return apiEnv.replace(/\/api\/?$/, "");
     }
-    return window.location.origin;
+
+    // Vercel serverless functions do not host persistent WebSocket servers.
+    // Returning null prevents unsupported WebSocket handshakes to *.vercel.app.
+    // Dashboards automatically use periodic REST polling for live data updates.
+    return null;
   }
 
-  // In local development
-  return socketEnv || (apiEnv ? apiEnv.replace(/\/api\/?$/, "") : "http://localhost:5000");
+  // In local development: connect to local Socket.IO server
+  return socketEnv || (apiEnv && !apiEnv.startsWith("/") ? apiEnv.replace(/\/api\/?$/, "") : "http://localhost:5000");
 }
 
 const SOCKET_URL = resolveSocketUrl();
@@ -32,6 +45,11 @@ const SOCKET_URL = resolveSocketUrl();
  * Get or create authenticated socket connection
  */
 export function getSocket() {
+  // If no dedicated WebSocket server is available in this environment
+  if (!SOCKET_URL) {
+    return null;
+  }
+
   const token = localStorage.getItem("roamly-token");
 
   if (!token) {
@@ -55,19 +73,36 @@ export function getSocket() {
   }
 
   // Create new socket connection
-  socketInstance = io(SOCKET_URL, {
-    auth: { token },
-    transports: ["websocket", "polling"],
-    reconnection: true,
-    reconnectionAttempts: 10,
-    reconnectionDelay: 2000
-  });
+  try {
+    socketInstance = io(SOCKET_URL, {
+      auth: { token },
+      transports: ["websocket", "polling"],
+      reconnection: true,
+      reconnectionAttempts: 3,
+      reconnectionDelay: 5000,
+      timeout: 10000
+    });
 
-  socketInstance.on("connect_error", (err) => {
-    console.warn("Roamly real-time socket connection warning:", err.message);
-  });
+    let warnedOnce = false;
+    socketInstance.on("connect_error", (err) => {
+      if (!warnedOnce) {
+        warnedOnce = true;
+        if (import.meta.env.DEV) {
+          console.warn("Roamly real-time socket connection warning:", err.message);
+        }
+      }
+    });
 
-  return socketInstance;
+    socketInstance.on("reconnect_failed", () => {
+      if (socketInstance) {
+        socketInstance.disconnect();
+      }
+    });
+
+    return socketInstance;
+  } catch (e) {
+    return null;
+  }
 }
 
 /**
