@@ -780,18 +780,24 @@ export default function BookingModal({
 
               {/* CLEAN 3-SEGMENT TIER SELECTOR */}
               <div className="pkg-tier-segment-bar" role="tablist" aria-label="Select Package Tier">
-                {availablePackages.map((pkg) => {
-                  const isSelected = (selectedPkg?.id && pkg?.id)
-                    ? String(selectedPkg.id) === String(pkg.id)
-                    : (selectedPkg?.tier && pkg?.tier)
-                    ? String(selectedPkg.tier).toLowerCase() === String(pkg.tier).toLowerCase()
-                    : false;
+                {availablePackages.map((pkg, idx) => {
+                  const selectedId = selectedPkg?.id || selectedPkg?.packageCode;
+                  const currentId = pkg.id || pkg.packageCode;
+                  const isSelected = selectedId && currentId
+                    ? String(selectedId) === String(currentId)
+                    : selectedPkg === pkg ||
+                      (selectedPkg?.tier &&
+                        pkg?.tier &&
+                        String(selectedPkg.tier).toLowerCase() === String(pkg.tier).toLowerCase() &&
+                        availablePackages.find(
+                          (p) => String(p.tier || "").toLowerCase() === String(selectedPkg.tier).toLowerCase()
+                        ) === pkg);
                   const rate = Number(pkg.pricePerPerson || pkg.price_per_person || 0);
                   const tierLabel = pkg.tier ? pkg.tier.charAt(0).toUpperCase() + pkg.tier.slice(1) : "Tier";
 
                   return (
                     <button
-                      key={pkg.id || pkg.tier}
+                      key={pkg.id || pkg.packageCode || `${pkg.tier}-${idx}`}
                       type="button"
                       role="tab"
                       aria-selected={isSelected}
