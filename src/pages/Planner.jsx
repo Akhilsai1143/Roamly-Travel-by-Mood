@@ -24,7 +24,9 @@ import {
   ShieldCheck,
   ExternalLink,
   ChevronRight,
-  Eye
+  Eye,
+  RefreshCw,
+  Bookmark
 } from "lucide-react";
 import { destinations } from "../data/destinations";
 import {
@@ -37,6 +39,21 @@ import {
 import { getDestinationGallery, getDestinationLandmarks } from "../data/destinationGalleries.js";
 import { getHotelsForDestination } from "../data/hotels.js";
 import BookingModal from "../components/BookingModal.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
+
+// AI Trip Planner & Interactive Travel Map Components
+import AITripPlannerForm from "../components/planner/AITripPlannerForm.jsx";
+import ItineraryTimeline from "../components/planner/ItineraryTimeline.jsx";
+import SavedTripsModal from "../components/planner/SavedTripsModal.jsx";
+import InteractiveTravelMap from "../components/map/InteractiveTravelMap.jsx";
+import {
+  generateAITrip,
+  regenerateTripDay,
+  getMySavedItineraries,
+  saveUserItinerary,
+  deleteUserItinerary
+} from "../api/itineraries.js";
+import "../components/planner/PlannerStyles.css";
 
 const emptyTrip = {
   destination: "manali",
@@ -101,6 +118,210 @@ export default function Planner() {
   const [copySuccess, setCopySuccess] = useState(false);
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
+
+  // AI Trip Planner & Interactive Map States
+  const { isLoggedIn, user } = useAuth();
+  const [activeMode, setActiveMode] = useState(() => {
+    return params.get("mode") === "classic" ? "classic" : "ai";
+  });
+  const [aiPlan, setAiPlan] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
+  const [savingTrip, setSavingTrip] = useState(false);
+  const [saveSuccessMsg, setSaveSuccessMsg] = useState("");
+  const [regeneratingDay, setRegeneratingDay] = useState(false);
+  const [savedModalOpen, setSavedModalOpen] = useState(false);
+  const [savedTrips, setSavedTrips] = useState([]);
+  const [savedTripsLoading, setSavedTripsLoading] = useState(false);
+
+  // Auto-generate initial plan for requested/initial destination if on AI mode
+  useEffect(() => {
+    if (activeMode === "ai" && !aiPlan && !aiLoading) {
+      handleGenerateAITrip({
+        destination: initialDest.name,
+        days: Number(trip.days) || 3,
+        budget: 18000,
+        travellers: Number(trip.travellers) || 2,
+        mood: "Culture",
+        selectedActivities: ["Heritage Forts & Palaces", "Authentic Street & Local Food"]
+      });
+    }
+  }, []);
+
+  // Generate AI Trip
+  async function handleGenerateAITrip(formData) {
+    setAiLoading(true);
+    setAiError("");
+    setSaveSuccessMsg("");
+    try {
+      const res = await generateAITrip(formData);
+      if (res.success && res.plan) {
+        setAiPlan(res.plan);
+        setTimeout(() => {
+          const el = document.getElementById("ai-itinerary-section");
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 150);
+      } else {
+        setAiError(res.message || "Could not generate itinerary. Please try again.");
+      }
+    } catch (err) {
+      setAiError(
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to generate trip plan. Please verify your connection."
+      );
+    } finally {
+      setAiLoading(false);
+    }
+  }
+
+  // Regenerate single day
+  async function handleRegenerateDay(dayNumber) {
+    if (!aiPlan) return;
+    setRegeneratingDay(true);
+    setAiError("");
+    try {
+      const currentDay = aiPlan.days?.find((d) => d.dayNumber === dayNumber);
+      const res = await regenerateTripDay({
+        destination: aiPlan.destination,
+        dayNumber,
+        currentDayPlan: currentDay,
+        mood: aiPlan.mood,
+        days: aiPlan.durationDays
+      });
+
+      if (res.success && res.dayPlan) {
+        setAiPlan((prev) => {
+          if (!prev) return prev;
+          const updatedDays = prev.days.map((d) =>
+            d.dayNumber === dayNumber ? res.dayPlan : d
+          );
+          return { ...prev, days: updatedDays };
+        });
+      }
+    } catch (err) {
+      setAiError(err.response?.data?.message || err.message || "Day regeneration failed.");
+    } finally {
+      setRegeneratingDay(false);
+    }
+  }
+
+  // Save current AI itinerary to account / storage
+  async function handleSaveTrip() {
+    if (!aiPlan) return;
+    setSavingTrip(true);
+    setSaveSuccessMsg("");
+    setAiError("");
+
+    try {
+      if (isLoggedIn) {
+        const destMatch = destinations.find(
+          (d) =>
+            d.name.toLowerCase() === (aiPlan.destination || "").toLowerCase() ||
+            d.id.toLowerCase() === (aiPlan.destination || "").toLowerCase()
+        );
+
+        await saveUserItinerary({
+          destinationId: destMatch?.id || null,
+          destinationName: aiPlan.destination,
+          tripTitle: aiPlan.tripTitle,
+          durationDays: aiPlan.durationDays,
+          travellersCount: aiPlan.travellers,
+          budgetTotal: aiPlan.estimatedCosts?.total || 0,
+          mood: aiPlan.mood,
+          itineraryJson: aiPlan
+        });
+        setSaveSuccessMsg("✨ Trip saved successfully to your Roamly account!");
+      } else {
+        const guestTrips = JSON.parse(localStorage.getItem("roamly_guest_saved_itineraries") || "[]");
+        const newGuestTrip = {
+          id: `guest-${Date.now()}`,
+          trip_title: aiPlan.tripTitle,
+          destination_name: aiPlan.destination,
+          duration_days: aiPlan.durationDays,
+          travellers_count: aiPlan.travellers,
+          budget_total: aiPlan.estimatedCosts?.total || 0,
+          mood: aiPlan.mood,
+          itinerary_json: aiPlan,
+          created_at: new Date().toISOString()
+        };
+        guestTrips.unshift(newGuestTrip);
+        localStorage.setItem("roamly_guest_saved_itineraries", JSON.stringify(guestTrips.slice(0, 10)));
+        setSaveSuccessMsg("Saved to local storage! Log in to sync your trips across all devices.");
+      }
+      setTimeout(() => setSaveSuccessMsg(""), 5000);
+    } catch (err) {
+      setAiError(err.response?.data?.message || err.message || "Failed to save itinerary.");
+    } finally {
+      setSavingTrip(false);
+    }
+  }
+
+  // Open saved trips modal and load trips
+  async function handleOpenSavedModal() {
+    setSavedModalOpen(true);
+    setSavedTripsLoading(true);
+    try {
+      let trips = [];
+      if (isLoggedIn) {
+        const res = await getMySavedItineraries();
+        trips = res.itineraries || [];
+      }
+      const guestTrips = JSON.parse(localStorage.getItem("roamly_guest_saved_itineraries") || "[]");
+      setSavedTrips([...trips, ...guestTrips]);
+    } catch (err) {
+      console.warn("Could not load online saved itineraries:", err);
+      const guestTrips = JSON.parse(localStorage.getItem("roamly_guest_saved_itineraries") || "[]");
+      setSavedTrips(guestTrips);
+    } finally {
+      setSavedTripsLoading(false);
+    }
+  }
+
+  // Select a saved trip from modal
+  function handleSelectSavedTrip(tripItem) {
+    const planData = typeof tripItem.itinerary_json === "string"
+      ? JSON.parse(tripItem.itinerary_json)
+      : tripItem.itinerary_json || tripItem;
+
+    setAiPlan(planData);
+    setSavedModalOpen(false);
+    setActiveMode("ai");
+    setTimeout(() => {
+      const el = document.getElementById("ai-itinerary-section");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 150);
+  }
+
+  // Delete a saved trip
+  async function handleDeleteSavedTrip(tripId) {
+    try {
+      if (String(tripId).startsWith("guest-")) {
+        const guestTrips = JSON.parse(localStorage.getItem("roamly_guest_saved_itineraries") || "[]");
+        const filtered = guestTrips.filter((t) => t.id !== tripId);
+        localStorage.setItem("roamly_guest_saved_itineraries", JSON.stringify(filtered));
+        setSavedTrips((prev) => prev.filter((t) => t.id !== tripId));
+      } else {
+        await deleteUserItinerary(tripId);
+        setSavedTrips((prev) => prev.filter((t) => t.id !== tripId));
+      }
+    } catch (err) {
+      alert("Failed to delete trip: " + (err.response?.data?.message || err.message));
+    }
+  }
+
+  // Book trip from AI Itinerary
+  function handleBookTripFromAI(destName) {
+    const found = destinations.find(
+      (d) =>
+        d.name.toLowerCase() === String(destName || "").toLowerCase() ||
+        d.id.toLowerCase() === String(destName || "").toLowerCase()
+    );
+    if (found) {
+      handleDestinationSelect(found.id);
+    }
+    setBookingModalOpen(true);
+  }
 
   // Synchronize on load or when query params change
   useEffect(() => {
@@ -346,7 +567,105 @@ export default function Planner() {
       </section>
 
       <section className="container planner-content">
-        <div className="planner-layout">
+        {/* MODE SWITCHER TABS */}
+        <div className="planner-mode-tabs-container" style={{ display: "flex", justifyContent: "center", marginBottom: "28px" }}>
+          <div className="planner-mode-tabs" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeMode === "ai"}
+              className={`planner-mode-tab ${activeMode === "ai" ? "active" : ""}`}
+              onClick={() => setActiveMode("ai")}
+            >
+              <Sparkles size={16} />
+              <span>AI Trip Planner & Interactive Map</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeMode === "classic"}
+              className={`planner-mode-tab ${activeMode === "classic" ? "active" : ""}`}
+              onClick={() => setActiveMode("classic")}
+            >
+              <CalendarDays size={16} />
+              <span>Classic Scratchpad & Templates</span>
+            </button>
+          </div>
+        </div>
+
+        {activeMode === "ai" ? (
+          <div className="ai-planner-container">
+            {/* AI PLANNER FORM */}
+            <AITripPlannerForm
+              onSubmit={handleGenerateAITrip}
+              isLoading={aiLoading}
+              initialValues={{
+                destination: selectedPlace.name,
+                days: Number(trip.days) || 3,
+                budget: budgetBreakdown ? budgetBreakdown.total : 18000,
+                travellers: Number(trip.travellers) || 2
+              }}
+            />
+
+            {/* ERROR BANNER IF ANY */}
+            {aiError && (
+              <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#991b1b", padding: "14px 20px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span>{aiError}</span>
+                <button type="button" onClick={() => setAiError("")} style={{ background: "transparent", border: "none", cursor: "pointer", color: "#991b1b", fontWeight: 700 }}>✕</button>
+              </div>
+            )}
+
+            {/* SUCCESS BANNER IF ANY */}
+            {saveSuccessMsg && (
+              <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", color: "#166534", padding: "14px 20px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span>{saveSuccessMsg}</span>
+                <button type="button" onClick={() => setSaveSuccessMsg("")} style={{ background: "transparent", border: "none", cursor: "pointer", color: "#166534", fontWeight: 700 }}>✕</button>
+              </div>
+            )}
+
+            {/* GENERATED ITINERARY SPLIT VIEW */}
+            {aiPlan ? (
+              <div className="planner-layout-split" id="ai-itinerary-section">
+                {/* TIMELINE COLUMN */}
+                <div className="ai-timeline-column">
+                  <ItineraryTimeline
+                    itinerary={aiPlan}
+                    onRegenerateDay={handleRegenerateDay}
+                    onSaveTrip={handleSaveTrip}
+                    onOpenSavedTrips={handleOpenSavedModal}
+                    onBookTrip={handleBookTripFromAI}
+                    isSaving={savingTrip}
+                    isLoggedIn={isLoggedIn}
+                    isRegeneratingDay={regeneratingDay}
+                  />
+                </div>
+
+                {/* MAP COLUMN */}
+                <div className="ai-map-column">
+                  <div style={{ position: "sticky", top: "90px" }}>
+                    <InteractiveTravelMap
+                      itinerary={aiPlan}
+                      centerCoordinates={aiPlan.centerCoordinates}
+                      destinationName={aiPlan.destination}
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              !aiLoading && (
+                <div style={{ textAlign: "center", padding: "40px 20px", background: "#f8fafc", borderRadius: "18px", border: "1px solid #e2e8f0" }}>
+                  <Compass size={40} color="#1b4332" style={{ margin: "0 auto 12px" }} />
+                  <h3 style={{ margin: "0 0 8px", fontSize: "1.2rem", fontWeight: 700 }}>Ready to plan your escape?</h3>
+                  <p style={{ margin: 0, color: "#64748b", fontSize: "0.9rem" }}>
+                    Select your destination, pace, and mood above, then click <strong>Generate Mindful Itinerary</strong> to visualize your trip with real routes and interactive map waypoints.
+                  </p>
+                </div>
+              )
+            )}
+          </div>
+        ) : (
+          /* CLASSIC SCRATCHPAD - 100% UNTOUCHED */
+          <div className="planner-layout">
           {/* CONFIGURATION FORM */}
           <div className="planner-form-pane">
             <div className="planner-form-header">
@@ -848,12 +1167,22 @@ export default function Planner() {
             )}
           </div>
         </div>
+        )}
       </section>
 
       <BookingModal
         isOpen={bookingModalOpen}
         onClose={() => setBookingModalOpen(false)}
         destination={selectedPlace}
+      />
+
+      <SavedTripsModal
+        isOpen={savedModalOpen}
+        onClose={() => setSavedModalOpen(false)}
+        savedTrips={savedTrips}
+        onSelectTrip={handleSelectSavedTrip}
+        onDeleteTrip={handleDeleteSavedTrip}
+        isLoading={savedTripsLoading}
       />
     </main>
   );

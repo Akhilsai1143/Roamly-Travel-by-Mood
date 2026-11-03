@@ -101,3 +101,157 @@ exports.chat = async (req, res) => {
     });
   }
 };
+
+/**
+ * POST /api/ai/plan-trip
+ * Generate complete AI Itinerary with verified map coordinates
+ */
+exports.planTrip = async (req, res) => {
+  try {
+    const { origin, destination, days, budget, travellers, mood, activities, travelDates } = req.body;
+
+    if (!destination || typeof destination !== "string" || !destination.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Please select or enter a valid travel destination."
+      });
+    }
+
+    const rateLimitKey = req.user?.id ? `user_${req.user.id}` : (req.ip || "guest");
+    if (!checkRateLimit(rateLimitKey)) {
+      return res.status(429).json({
+        success: false,
+        message: "You are generating plans too quickly. Please pause for a moment and try again."
+      });
+    }
+
+    const plan = await aiService.generateItineraryPlan({
+      origin: origin ? String(origin).trim() : "",
+      destination: String(destination).trim(),
+      days: days ? Number(days) : 3,
+      budget: budget ? Number(budget) : null,
+      travellers: travellers ? Number(travellers) : 2,
+      mood: mood ? String(mood).trim() : "Peace & Relaxation",
+      activities: Array.isArray(activities) ? activities : [],
+      travelDates: travelDates ? String(travelDates).trim() : ""
+    });
+
+    return res.json({
+      success: true,
+      plan
+    });
+  } catch (error) {
+    console.error("aiController planTrip error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to generate travel plan. Please try again."
+    });
+  }
+};
+
+/**
+ * POST /api/ai/regenerate-day
+ * Re-rolls a single specific day in an itinerary
+ */
+exports.regenerateDay = async (req, res) => {
+  try {
+    const { destination, dayNumber, mood, feedback } = req.body;
+
+    if (!destination || !dayNumber) {
+      return res.status(400).json({
+        success: false,
+        message: "Destination and day number are required."
+      });
+    }
+
+    const regeneratedDay = await aiService.regenerateSingleDayPlan({
+      destination: String(destination).trim(),
+      dayNumber: Number(dayNumber),
+      mood: mood ? String(mood).trim() : "",
+      feedback: feedback ? String(feedback).trim() : ""
+    });
+
+    return res.json({
+      success: true,
+      day: regeneratedDay
+    });
+  } catch (error) {
+    console.error("aiController regenerateDay error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to regenerate day. Please try again."
+    });
+  }
+};
+
+// In-memory geocode cache to adhere to Nominatim usage policies and save latency
+const geocodeCache = new Map();
+
+/**
+ * GET /api/ai/geocode?query=CityName
+ * Geocodes city or location with rate limiting and caching
+ */
+exports.geocode = async (req, res) => {
+  try {
+    const query = String(req.query.query || "").trim();
+    if (!query) {
+      return res.status(400).json({ success: false, message: "Location query is required." });
+    }
+
+    const cacheKey = query.toLowerCase();
+    if (geocodeCache.has(cacheKey)) {
+      return res.json({ success: true, ...geocodeCache.get(cacheKey) });
+    }
+
+    const https = require("https");
+    const encoded = encodeURIComponent(query);
+    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encoded}`;
+
+    const fetchResult = await new Promise((resolve) => {
+      const request = https.get(
+        url,
+        {
+          headers: {
+            "User-Agent": "RoamlyTravelApp/1.0 (contact@roamly.com)"
+          },
+          timeout: 4000
+        },
+        (resp) => {
+          let data = "";
+          resp.on("data", (chunk) => (data += chunk));
+          resp.on("end", () => {
+            try {
+              const list = JSON.parse(data);
+              if (Array.isArray(list) && list.length > 0) {
+                resolve({
+                  lat: parseFloat(list[0].lat),
+                  lng: parseFloat(list[0].lon),
+                  displayName: list[0].display_name
+                });
+              } else {
+                resolve(null);
+              }
+            } catch {
+              resolve(null);
+            }
+          });
+        }
+      );
+      request.on("error", () => resolve(null));
+      request.on("timeout", () => {
+        request.destroy();
+        resolve(null);
+      });
+    });
+
+    if (fetchResult) {
+      geocodeCache.set(cacheKey, fetchResult);
+      return res.json({ success: true, ...fetchResult });
+    }
+
+    return res.status(404).json({ success: false, message: "Location not found." });
+  } catch (error) {
+    console.error("Geocode error:", error.message);
+    return res.status(500).json({ success: false, message: "Geocoding failed." });
+  }
+};

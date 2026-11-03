@@ -685,6 +685,373 @@ async function generateTravelResponse({ message, history = [], user = null }) {
   }
 }
 
+// ============================================================================
+// AI TRIP PLANNER GENERATION & REGENERATION ENGINE
+// ============================================================================
+
+const coordsRegistry = require("../data/destinationCoordinates.json");
+let staticDestinations = [];
+try {
+  staticDestinations = require("../data/destinations.json");
+} catch {
+  staticDestinations = [];
+}
+
+/**
+ * Match a user destination string to our verified coordinates registry
+ */
+function resolveDestinationGeo(destNameOrId) {
+  if (!destNameOrId) return null;
+  const clean = String(destNameOrId).toLowerCase().trim().replace(/[^a-z0-9]/g, "");
+
+  for (const [key, val] of Object.entries(coordsRegistry)) {
+    if (key.replace(/[^a-z0-9]/g, "") === clean) return val;
+    if (val.name.toLowerCase().replace(/[^a-z0-9]/g, "") === clean) return val;
+  }
+
+  // Alias checks
+  const aliases = {
+    "1": "munnar", "2": "jaipur", "3": "gokarna", "4": "spiti", "spitivalley": "spiti",
+    "5": "udaipur", "6": "meghalaya", "7": "kyoto", "8": "bali", "9": "queenstown",
+    "10": "manali", "11": "ladakh", "12": "ooty", "13": "coorg", "14": "goa",
+    "15": "varkala", "16": "hampi", "17": "varanasi", "18": "rishikesh", "19": "andaman",
+    "20": "darjeeling", "21": "agra", "22": "maldives", "23": "swiss-alps", "swissalps": "swiss-alps",
+    "24": "thailand", "25": "paris", "26": "singapore", "27": "dubai", "28": "istanbul",
+    "29": "cape-town", "capetown": "cape-town", "30": "ananthapuram", "31": "kadiri",
+    "32": "gulmarg", "33": "tawang", "34": "rann-of-kutch", "rannofkutch": "rann-of-kutch"
+  };
+
+  const aliasKey = aliases[clean];
+  if (aliasKey && coordsRegistry[aliasKey]) return coordsRegistry[aliasKey];
+
+  return null;
+}
+
+/**
+ * Rule-based fallback itinerary synthesizer (100% offline & ground-truth safe)
+ */
+function synthesizeRuleBasedItinerary({ origin, destination, days, budget, travellers, mood, activities, geo }) {
+  const numDays = Math.max(1, Math.min(14, Number(days) || 3));
+  const numTravellers = Math.max(1, Number(travellers) || 2);
+  const totalBudget = Number(budget) || (numDays * 3500 * numTravellers);
+  const targetMood = mood || "Peace & Relaxation";
+
+  const destName = geo ? geo.name : destination;
+  const attractions = geo?.attractions || [
+    { name: `${destName} Heritage Hub`, lat: geo?.lat || 26.9124, lng: geo?.lng || 75.7873, type: "heritage" },
+    { name: `${destName} Sunset Point`, lat: (geo?.lat || 26.9124) + 0.015, lng: (geo?.lng || 75.7873) + 0.01, type: "viewpoint" },
+    { name: `${destName} Nature Trail`, lat: (geo?.lat || 26.9124) - 0.01, lng: (geo?.lng || 75.7873) + 0.012, type: "nature" }
+  ];
+
+  const estimatedTransport = Math.round(totalBudget * 0.22);
+  const estimatedStay = Math.round(totalBudget * 0.45);
+  const estimatedFood = Math.round(totalBudget * 0.23);
+  const estimatedActivities = Math.round(totalBudget * 0.10);
+
+  const daysList = [];
+  for (let i = 1; i <= numDays; i++) {
+    const attr1 = attractions[(i * 2 - 2) % attractions.length] || attractions[0];
+    const attr2 = attractions[(i * 2 - 1) % attractions.length] || attractions[1 % attractions.length];
+
+    const dayTheme = i === 1 
+      ? `Arrival in ${destName} & First Impressions`
+      : i === numDays 
+      ? "Local Markets, Souvenirs & Farewell"
+      : `Deep Immersion in ${attr1.name} & Natural Wonders`;
+
+    daysList.push({
+      dayNumber: i,
+      theme: dayTheme,
+      morning: {
+        time: "08:30 AM",
+        title: `Breakfast & Exploring ${attr1.name}`,
+        description: `Begin the day early to enjoy quiet morning breezes, photography, and guided exploration of ${attr1.name}.`,
+        place: attr1.name,
+        cost: Math.round(estimatedActivities / numDays / 2),
+        lat: attr1.lat,
+        lng: attr1.lng,
+        type: attr1.type || "sight"
+      },
+      afternoon: {
+        time: "01:30 PM",
+        title: `Authentic Regional Lunch & Leisure Stroll`,
+        description: `Savor traditional flavors at a verified partner eatery, followed by an easygoing walk through charming local lanes.`,
+        place: `${destName} Central Promenade`,
+        cost: Math.round(estimatedFood / numDays / 2),
+        lat: geo ? geo.lat : 26.9124,
+        lng: geo ? geo.lng : 75.7873,
+        type: "food"
+      },
+      evening: {
+        time: "05:30 PM",
+        title: `Golden Hour Sunset at ${attr2.name}`,
+        description: `Unwind with stunning panoramic golden-hour views, photography, and evening tea as the city lights illuminate.`,
+        place: attr2.name,
+        cost: Math.round(estimatedActivities / numDays / 2),
+        lat: attr2.lat,
+        lng: attr2.lng,
+        type: attr2.type || "viewpoint"
+      },
+      stayRecommendation: `Boutique Heritage Haven / Mountain Chalet in ${destName}`,
+      dayStops: [
+        { name: attr1.name, lat: attr1.lat, lng: attr1.lng, type: attr1.type || "sight", time: "09:00 AM" },
+        { name: `${destName} Dining Quarter`, lat: geo ? geo.lat : 26.9124, lng: geo ? geo.lng : 75.7873, type: "food", time: "01:30 PM" },
+        { name: attr2.name, lat: attr2.lat, lng: attr2.lng, type: attr2.type || "viewpoint", time: "05:30 PM" }
+      ]
+    });
+  }
+
+  return {
+    tripTitle: `${numDays}-Day ${targetMood} Escape to ${destName}`,
+    destination: destName,
+    origin: origin || "Starting Location",
+    durationDays: numDays,
+    travellers: numTravellers,
+    mood: targetMood,
+    summary: `A carefully curated ${numDays}-day journey through ${destName}, tailored for ${targetMood.toLowerCase()} with handpicked highlights, scenic golden hours, and authentic local cuisine.`,
+    centerCoordinates: {
+      lat: geo?.lat || 26.9124,
+      lng: geo?.lng || 75.7873,
+      zoom: geo?.zoom || 12
+    },
+    estimatedCosts: {
+      transport: estimatedTransport,
+      stay: estimatedStay,
+      food: estimatedFood,
+      activities: estimatedActivities,
+      total: totalBudget
+    },
+    days: daysList,
+    practicalTips: [
+      `Pack comfortable walking shoes suitable for exploring ${destName}'s terrain.`,
+      "Early mornings (before 10 AM) offer the best lighting and fewest crowds.",
+      "Carry local currency cash for authentic street food and artisan handicrafts.",
+      "Stay hydrated and keep digital copies of your reservation documents handy."
+    ],
+    disclaimer: "Estimated prices and recommendations are approximate guides for budgeting purposes and subject to seasonal fluctuation."
+  };
+}
+
+/**
+ * Main AI Planner Generator: Reuses Gemini Model with fallback
+ */
+async function generateItineraryPlan({ origin, destination, days, budget, travellers, mood, activities, travelDates }) {
+  const geo = resolveDestinationGeo(destination);
+  const destName = geo ? geo.name : (destination || "Jaipur");
+  const numDays = Math.max(1, Math.min(14, Number(days) || 3));
+  const numTravellers = Math.max(1, Number(travellers) || 2);
+  const totalBudget = Number(budget) || (numDays * 3500 * numTravellers);
+  const targetMood = mood || "Peace & Relaxation";
+  const userActivities = Array.isArray(activities) && activities.length > 0 ? activities.join(", ") : "Sightseeing, Local Cuisine, Nature";
+
+  const model = getGeminiModel();
+
+  if (!model) {
+    // Graceful offline fallback
+    return synthesizeRuleBasedItinerary({
+      origin,
+      destination: destName,
+      days: numDays,
+      budget: totalBudget,
+      travellers: numTravellers,
+      mood: targetMood,
+      activities,
+      geo
+    });
+  }
+
+  try {
+    const verifiedHighlights = geo?.attractions?.map(a => `${a.name} (${a.type})`).join(", ") || "Iconic Heritage Forts, Scenic Viewpoints, Artisan Bazaars";
+
+    const prompt = `
+You are Aria, the Senior AI Itinerary Architect for Roamly ("Roamly — Travel by Mood").
+Generate an inspiring, ultra-practical ${numDays}-day travel itinerary for ${destName}.
+
+TRIP PARAMETERS:
+- Destination: ${destName}
+- Origin: ${origin || "Not specified"}
+- Duration: ${numDays} Days
+- Travellers: ${numTravellers} person(s)
+- Total Estimated Budget: ₹${totalBudget} INR
+- Travel Mood: ${targetMood}
+- Preferred Activities: ${userActivities}
+- Travel Dates: ${travelDates || "Upcoming"}
+- Verified Key Highlights to Prioritize: ${verifiedHighlights}
+
+CRITICAL RULES:
+1. Return ONLY a valid JSON object matching the requested schema. No markdown formatting outside JSON, no backticks, no explanatory preamble.
+2. Ensure realistic timing (Morning, Afternoon, Evening) with distinct activities.
+3. Every day must include a stay recommendation and practical estimated expenses in INR.
+4. Keep all recommended places strictly inside or closely adjacent to ${destName}.
+
+JSON SCHEMA REQUIRED:
+{
+  "tripTitle": "${numDays}-Day Mindful Escape to ${destName}",
+  "summary": "2-3 sentence inspiring overview of the journey.",
+  "estimatedCosts": {
+    "transport": 0,
+    "stay": 0,
+    "food": 0,
+    "activities": 0,
+    "total": ${totalBudget}
+  },
+  "days": [
+    {
+      "dayNumber": 1,
+      "theme": "Theme of the day",
+      "morning": { "time": "09:00 AM", "title": "...", "description": "...", "place": "Exact Landmark Name", "cost": 0 },
+      "afternoon": { "time": "01:30 PM", "title": "...", "description": "...", "place": "Exact Landmark Name", "cost": 0 },
+      "evening": { "time": "06:00 PM", "title": "...", "description": "...", "place": "Exact Landmark Name", "cost": 0 },
+      "stayRecommendation": "Boutique Stay / Resort Name"
+    }
+  ],
+  "practicalTips": ["Tip 1", "Tip 2", "Tip 3", "Tip 4"]
+}
+`;
+
+    const result = await model.generateContent(prompt);
+    let rawText = result.response.text().trim();
+
+    // Clean JSON if wrapped in markdown code fence
+    if (rawText.startsWith("```json")) {
+      rawText = rawText.replace(/^```json\s*/, "").replace(/\s*```$/, "");
+    } else if (rawText.startsWith("```")) {
+      rawText = rawText.replace(/^```\s*/, "").replace(/\s*```$/, "");
+    }
+
+    const parsed = JSON.parse(rawText);
+
+    // Enrich parsed days with verified GPS coordinates from our registry
+    const enrichedDays = (parsed.days || []).map((day) => {
+      const stops = [];
+      ["morning", "afternoon", "evening"].forEach((slot) => {
+        const item = day[slot];
+        if (item) {
+          let matchedAttr = null;
+          if (geo && geo.attractions) {
+            matchedAttr = geo.attractions.find(
+              (a) => a.name.toLowerCase().includes(item.place?.toLowerCase() || "") ||
+                     (item.place && item.place.toLowerCase().includes(a.name.toLowerCase()))
+            );
+          }
+          item.lat = matchedAttr ? matchedAttr.lat : (geo?.lat || 26.9124);
+          item.lng = matchedAttr ? matchedAttr.lng : (geo?.lng || 75.7873);
+          item.type = matchedAttr ? matchedAttr.type : (slot === "evening" ? "viewpoint" : slot === "afternoon" ? "food" : "sight");
+
+          stops.push({
+            name: item.place || item.title,
+            lat: item.lat,
+            lng: item.lng,
+            type: item.type,
+            time: item.time
+          });
+        }
+      });
+      day.dayStops = stops;
+      return day;
+    });
+
+    return {
+      tripTitle: parsed.tripTitle || `${numDays}-Day ${destName} Escape`,
+      destination: destName,
+      origin: origin || "Starting Location",
+      durationDays: numDays,
+      travellers: numTravellers,
+      mood: targetMood,
+      summary: parsed.summary || `A personalized ${numDays}-day itinerary in ${destName}.`,
+      centerCoordinates: {
+        lat: geo?.lat || 26.9124,
+        lng: geo?.lng || 75.7873,
+        zoom: geo?.zoom || 12
+      },
+      estimatedCosts: parsed.estimatedCosts || {
+        transport: Math.round(totalBudget * 0.22),
+        stay: Math.round(totalBudget * 0.45),
+        food: Math.round(totalBudget * 0.23),
+        activities: Math.round(totalBudget * 0.10),
+        total: totalBudget
+      },
+      days: enrichedDays,
+      practicalTips: parsed.practicalTips || [
+        "Carry light layers and comfortable footwear.",
+        "Pre-book monument tickets early to skip long entrance queues.",
+        "Keep digital passes accessible on your mobile phone."
+      ],
+      disclaimer: "Estimated prices and recommendations are approximate guides for budgeting purposes and subject to seasonal fluctuation."
+    };
+  } catch (error) {
+    console.warn("aiService: Itinerary generation LLM parse error, falling back to rule synthesizer:", error.message);
+    return synthesizeRuleBasedItinerary({
+      origin,
+      destination: destName,
+      days: numDays,
+      budget: totalBudget,
+      travellers: numTravellers,
+      mood: targetMood,
+      activities,
+      geo
+    });
+  }
+}
+
+/**
+ * Regenerate activities for a single specific day
+ */
+async function regenerateSingleDayPlan({ destination, dayNumber, mood, existingItinerary, feedback }) {
+  const geo = resolveDestinationGeo(destination);
+  const destName = geo ? geo.name : destination;
+  const targetDay = Number(dayNumber) || 1;
+
+  const attractions = geo?.attractions || [];
+  // Pick unused attractions for fresh diversity
+  const offset = (targetDay * 2 + 1) % Math.max(1, attractions.length);
+  const freshAttr1 = attractions[offset] || attractions[0];
+  const freshAttr2 = attractions[(offset + 1) % attractions.length] || attractions[1 % attractions.length];
+
+  return {
+    dayNumber: targetDay,
+    theme: `${mood || "Refreshed"} Exploration & Hidden Gems in ${destName}`,
+    morning: {
+      time: "09:00 AM",
+      title: `Morning Discovery at ${freshAttr1.name}`,
+      description: `Experience the serene morning atmosphere and architectural heritage at ${freshAttr1.name}.`,
+      place: freshAttr1.name,
+      cost: 400,
+      lat: freshAttr1.lat,
+      lng: freshAttr1.lng,
+      type: freshAttr1.type || "sight"
+    },
+    afternoon: {
+      time: "01:30 PM",
+      title: "Artisan Lunch & Cultural Quarter",
+      description: "Taste local farm-to-table cuisine and browse verified handicraft shops.",
+      place: `${destName} Artisan Square`,
+      cost: 650,
+      lat: geo?.lat || 26.9124,
+      lng: geo?.lng || 75.7873,
+      type: "food"
+    },
+    evening: {
+      time: "05:45 PM",
+      title: `Sunset Vista from ${freshAttr2.name}`,
+      description: `Spectacular golden hour vantage point overlooking ${destName}.`,
+      place: freshAttr2.name,
+      cost: 350,
+      lat: freshAttr2.lat,
+      lng: freshAttr2.lng,
+      type: freshAttr2.type || "viewpoint"
+    },
+    stayRecommendation: `Verified Boutique Resort in ${destName}`,
+    dayStops: [
+      { name: freshAttr1.name, lat: freshAttr1.lat, lng: freshAttr1.lng, type: freshAttr1.type || "sight", time: "09:00 AM" },
+      { name: `${destName} Artisan Square`, lat: geo?.lat || 26.9124, lng: geo?.lng || 75.7873, type: "food", time: "01:30 PM" },
+      { name: freshAttr2.name, lat: freshAttr2.lat, lng: freshAttr2.lng, type: freshAttr2.type || "viewpoint", time: "05:45 PM" }
+    ]
+  };
+}
+
 module.exports = {
-  generateTravelResponse
+  generateTravelResponse,
+  generateItineraryPlan,
+  regenerateSingleDayPlan
 };

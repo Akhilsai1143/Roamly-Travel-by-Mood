@@ -1,0 +1,567 @@
+{
+  "munnar": {
+    "id": "munnar",
+    "name": "Munnar",
+    "state": "Kerala",
+    "country": "India",
+    "lat": 10.0889,
+    "lng": 77.0595,
+    "zoom": 12,
+    "bounds": { "minLat": 9.95, "maxLat": 10.25, "minLng": 76.90, "maxLng": 77.25 },
+    "attractions": [
+      { "name": "Kannan Devan Tea Museum", "lat": 10.0764, "lng": 77.0558, "type": "culture" },
+      { "name": "Mattupetty Dam", "lat": 10.1065, "lng": 77.1245, "type": "nature" },
+      { "name": "Eravikulam National Park", "lat": 10.2000, "lng": 77.0600, "type": "nature" },
+      { "name": "Top Station", "lat": 10.1247, "lng": 77.2442, "type": "viewpoint" },
+      { "name": "Attukal Waterfalls", "lat": 10.0531, "lng": 77.0425, "type": "nature" },
+      { "name": "Kolukkumalai Sunrise Peak", "lat": 10.0833, "lng": 77.2167, "type": "adventure" }
+    ]
+  },
+  "jaipur": {
+    "id": "jaipur",
+    "name": "Jaipur",
+    "state": "Rajasthan",
+    "country": "India",
+    "lat": 26.9124,
+    "lng": 75.7873,
+    "zoom": 12,
+    "bounds": { "minLat": 26.75, "maxLat": 27.05, "minLng": 75.65, "maxLng": 76.00 },
+    "attractions": [
+      { "name": "Hawa Mahal", "lat": 26.9239, "lng": 75.8267, "type": "heritage" },
+      { "name": "Amer Fort", "lat": 26.9855, "lng": 75.8513, "type": "heritage" },
+      { "name": "City Palace", "lat": 26.9258, "lng": 75.8237, "type": "heritage" },
+      { "name": "Jantar Mantar", "lat": 26.9248, "lng": 75.8246, "type": "heritage" },
+      { "name": "Jal Mahal", "lat": 26.9535, "lng": 75.8462, "type": "sight" },
+      { "name": "Nahargarh Fort", "lat": 26.9373, "lng": 75.8157, "type": "viewpoint" },
+      { "name": "Panna Meena ka Kund", "lat": 26.9868, "lng": 75.8562, "type": "heritage" }
+    ]
+  },
+  "gokarna": {
+    "id": "gokarna",
+    "name": "Gokarna",
+    "state": "Karnataka",
+    "country": "India",
+    "lat": 14.5479,
+    "lng": 74.3188,
+    "zoom": 13,
+    "bounds": { "minLat": 14.45, "maxLat": 14.65, "minLng": 74.25, "maxLng": 74.45 },
+    "attractions": [
+      { "name": "Om Beach", "lat": 14.5197, "lng": 74.3186, "type": "beach" },
+      { "name": "Kudle Beach", "lat": 14.5283, "lng": 74.3164, "type": "beach" },
+      { "name": "Half Moon Beach", "lat": 14.5100, "lng": 74.3228, "type": "beach" },
+      { "name": "Paradise Beach", "lat": 14.5036, "lng": 74.3267, "type": "beach" },
+      { "name": "Mahabaleshwar Temple", "lat": 14.5436, "lng": 74.3181, "type": "heritage" },
+      { "name": "Yana Rocks", "lat": 14.5883, "lng": 74.5583, "type": "adventure" }
+    ]
+  },
+  "spiti": {
+    "id": "spiti",
+    "name": "Spiti Valley",
+    "state": "Himachal Pradesh",
+    "country": "India",
+    "lat": 32.2461,
+    "lng": 78.0349,
+    "zoom": 11,
+    "bounds": { "minLat": 31.80, "maxLat": 32.60, "minLng": 77.40, "maxLng": 78.60 },
+    "attractions": [
+      { "name": "Key Monastery", "lat": 32.2975, "lng": 78.0125, "type": "heritage" },
+      { "name": "Chandratal Lake", "lat": 32.4828, "lng": 77.6161, "type": "nature" },
+      { "name": "Hikkim Post Office", "lat": 32.2536, "lng": 78.0931, "type": "sight" },
+      { "name": "Kaza Main Market", "lat": 32.2276, "lng": 78.0538, "type": "culture" },
+      { "name": "Dhankar Monastery & Lake", "lat": 32.0256, "lng": 78.2239, "type": "heritage" },
+      { "name": "Chicham Bridge", "lat": 32.3214, "lng": 77.9897, "type": "sight" }
+    ]
+  },
+  "udaipur": {
+    "id": "udaipur",
+    "name": "Udaipur",
+    "state": "Rajasthan",
+    "country": "India",
+    "lat": 24.5854,
+    "lng": 73.7125,
+    "zoom": 13,
+    "bounds": { "minLat": 24.45, "maxLat": 24.70, "minLng": 73.60, "maxLng": 73.85 },
+    "attractions": [
+      { "name": "City Palace Udaipur", "lat": 24.5764, "lng": 73.6835, "type": "heritage" },
+      { "name": "Lake Pichola", "lat": 24.5714, "lng": 73.6761, "type": "nature" },
+      { "name": "Jag Mandir", "lat": 24.5678, "lng": 73.6775, "type": "heritage" },
+      { "name": "Saheliyon ki Bari", "lat": 24.6044, "lng": 73.6872, "type": "sight" },
+      { "name": "Bagore ki Haveli", "lat": 24.5794, "lng": 73.6806, "type": "culture" },
+      { "name": "Sajjangarh Monsoon Palace", "lat": 24.5919, "lng": 73.6369, "type": "viewpoint" }
+    ]
+  },
+  "meghalaya": {
+    "id": "meghalaya",
+    "name": "Meghalaya",
+    "state": "Northeast India",
+    "country": "India",
+    "lat": 25.5788,
+    "lng": 91.8933,
+    "zoom": 11,
+    "bounds": { "minLat": 25.10, "maxLat": 25.80, "minLng": 91.30, "maxLng": 92.20 },
+    "attractions": [
+      { "name": "Double Decker Living Root Bridge", "lat": 25.2514, "lng": 91.6706, "type": "nature" },
+      { "name": "Dawki Umngot River", "lat": 25.1844, "lng": 92.0197, "type": "nature" },
+      { "name": "Nohkalikai Falls", "lat": 25.2758, "lng": 91.6847, "type": "nature" },
+      { "name": "Mawlynnong Clean Village", "lat": 25.2025, "lng": 91.9161, "type": "culture" },
+      { "name": "Krang Shuri Falls", "lat": 25.3283, "lng": 92.3028, "type": "nature" }
+    ]
+  },
+  "kyoto": {
+    "id": "kyoto",
+    "name": "Kyoto",
+    "state": "Kansai",
+    "country": "Japan",
+    "lat": 35.0116,
+    "lng": 135.7681,
+    "zoom": 13,
+    "bounds": { "minLat": 34.90, "maxLat": 35.15, "minLng": 135.65, "maxLng": 135.85 },
+    "attractions": [
+      { "name": "Fushimi Inari Taisha", "lat": 34.9671, "lng": 135.7727, "type": "heritage" },
+      { "name": "Kinkaku-ji (Golden Pavilion)", "lat": 35.0394, "lng": 135.7292, "type": "heritage" },
+      { "name": "Arashiyama Bamboo Grove", "lat": 35.0170, "lng": 135.6713, "type": "nature" },
+      { "name": "Kiyomizu-dera", "lat": 34.9949, "lng": 135.7850, "type": "heritage" },
+      { "name": "Gion Historic District", "lat": 35.0037, "lng": 135.7772, "type": "culture" }
+    ]
+  },
+  "bali": {
+    "id": "bali",
+    "name": "Bali",
+    "state": "Bali",
+    "country": "Indonesia",
+    "lat": -8.4095,
+    "lng": 115.1889,
+    "zoom": 11,
+    "bounds": { "minLat": -8.90, "maxLat": -8.05, "minLng": 114.40, "maxLng": 115.75 },
+    "attractions": [
+      { "name": "Tegallalang Rice Terraces", "lat": -8.4342, "lng": 115.2797, "type": "nature" },
+      { "name": "Uluwatu Clifftop Temple", "lat": -8.8291, "lng": 115.0849, "type": "heritage" },
+      { "name": "Sacred Monkey Forest Ubud", "lat": -8.5194, "lng": 115.2606, "type": "nature" },
+      { "name": "Tanah Lot Temple", "lat": -8.6212, "lng": 115.0868, "type": "heritage" },
+      { "name": "Mount Batur", "lat": -8.2422, "lng": 115.3753, "type": "adventure" }
+    ]
+  },
+  "queenstown": {
+    "id": "queenstown",
+    "name": "Queenstown",
+    "state": "Otago",
+    "country": "New Zealand",
+    "lat": -45.0312,
+    "lng": 168.6626,
+    "zoom": 13,
+    "bounds": { "minLat": -45.20, "maxLat": -44.90, "minLng": 168.50, "maxLng": 168.85 },
+    "attractions": [
+      { "name": "Skyline Gondola & Luge", "lat": -45.0289, "lng": 168.6558, "type": "viewpoint" },
+      { "name": "Lake Wakatipu", "lat": -45.0417, "lng": 168.6333, "type": "nature" },
+      { "name": "Milford Sound Highway", "lat": -44.6714, "lng": 167.9256, "type": "adventure" },
+      { "name": "Onsen Hot Pools", "lat": -44.9919, "lng": 168.6942, "type": "relaxation" }
+    ]
+  },
+  "manali": {
+    "id": "manali",
+    "name": "Manali",
+    "state": "Himachal Pradesh",
+    "country": "India",
+    "lat": 32.2432,
+    "lng": 77.1892,
+    "zoom": 13,
+    "bounds": { "minLat": 32.15, "maxLat": 32.35, "minLng": 77.10, "maxLng": 77.28 },
+    "attractions": [
+      { "name": "Hadimba Temple", "lat": 32.2472, "lng": 77.1706, "type": "heritage" },
+      { "name": "Solang Valley", "lat": 32.3164, "lng": 77.1578, "type": "adventure" },
+      { "name": "Old Manali Cafes", "lat": 32.2547, "lng": 77.1783, "type": "culture" },
+      { "name": "Jogini Waterfalls", "lat": 32.2689, "lng": 77.1975, "type": "nature" },
+      { "name": "Atal Tunnel South Portal", "lat": 32.3619, "lng": 77.1333, "type": "sight" }
+    ]
+  },
+  "ladakh": {
+    "id": "ladakh",
+    "name": "Ladakh",
+    "state": "Ladakh",
+    "country": "India",
+    "lat": 34.1526,
+    "lng": 77.5771,
+    "zoom": 11,
+    "bounds": { "minLat": 33.50, "maxLat": 34.80, "minLng": 76.80, "maxLng": 78.50 },
+    "attractions": [
+      { "name": "Pangong Tso Lake", "lat": 33.7595, "lng": 78.6674, "type": "nature" },
+      { "name": "Nubra Valley Sand Dunes", "lat": 34.6864, "lng": 77.5672, "type": "adventure" },
+      { "name": "Shanti Stupa Leh", "lat": 34.1681, "lng": 77.5819, "type": "heritage" },
+      { "name": "Thiksey Monastery", "lat": 34.0567, "lng": 77.6667, "type": "heritage" },
+      { "name": "Magnetic Hill", "lat": 34.1950, "lng": 77.3517, "type": "sight" }
+    ]
+  },
+  "ooty": {
+    "id": "ooty",
+    "name": "Ooty",
+    "state": "Tamil Nadu",
+    "country": "India",
+    "lat": 11.4102,
+    "lng": 76.6950,
+    "zoom": 13,
+    "bounds": { "minLat": 11.32, "maxLat": 11.48, "minLng": 76.60, "maxLng": 76.78 },
+    "attractions": [
+      { "name": "Botanical Gardens Ooty", "lat": 11.4181, "lng": 76.7114, "type": "nature" },
+      { "name": "Doddabetta Peak", "lat": 11.4011, "lng": 76.7358, "type": "viewpoint" },
+      { "name": "Ooty Lake & Boating", "lat": 11.4056, "lng": 76.6892, "type": "nature" },
+      { "name": "Nilgiri Mountain Railway", "lat": 11.4075, "lng": 76.7022, "type": "heritage" },
+      { "name": "Pykara Waterfalls & Lake", "lat": 11.4650, "lng": 76.5956, "type": "nature" }
+    ]
+  },
+  "coorg": {
+    "id": "coorg",
+    "name": "Coorg",
+    "state": "Karnataka",
+    "country": "India",
+    "lat": 12.4244,
+    "lng": 75.7382,
+    "zoom": 12,
+    "bounds": { "minLat": 12.20, "maxLat": 12.60, "minLng": 75.60, "maxLng": 75.95 },
+    "attractions": [
+      { "name": "Abbey Falls", "lat": 12.4547, "lng": 75.7178, "type": "nature" },
+      { "name": "Raja's Seat Sunset View", "lat": 12.4178, "lng": 75.7361, "type": "viewpoint" },
+      { "name": "Dubare Elephant Camp", "lat": 12.3686, "lng": 75.9042, "type": "nature" },
+      { "name": "Namdroling Golden Temple", "lat": 12.4508, "lng": 75.9667, "type": "heritage" },
+      { "name": "Talakaveri Origin of River", "lat": 12.3853, "lng": 75.4928, "type": "heritage" }
+    ]
+  },
+  "goa": {
+    "id": "goa",
+    "name": "Goa",
+    "state": "Goa",
+    "country": "India",
+    "lat": 15.4909,
+    "lng": 73.8278,
+    "zoom": 11,
+    "bounds": { "minLat": 14.90, "maxLat": 15.80, "minLng": 73.65, "maxLng": 74.30 },
+    "attractions": [
+      { "name": "Fontainhas Latin Quarter", "lat": 15.4989, "lng": 73.8322, "type": "culture" },
+      { "name": "Basilica of Bom Jesus", "lat": 15.5008, "lng": 73.9117, "type": "heritage" },
+      { "name": "Palolem Beach", "lat": 15.0100, "lng": 74.0233, "type": "beach" },
+      { "name": "Dudhsagar Falls", "lat": 15.3144, "lng": 74.3144, "type": "nature" },
+      { "name": "Chapora Fort", "lat": 15.6058, "lng": 73.7372, "type": "viewpoint" }
+    ]
+  },
+  "varkala": {
+    "id": "varkala",
+    "name": "Varkala",
+    "state": "Kerala",
+    "country": "India",
+    "lat": 8.7379,
+    "lng": 76.7163,
+    "zoom": 13,
+    "bounds": { "minLat": 8.68, "maxLat": 8.80, "minLng": 76.65, "maxLng": 76.76 },
+    "attractions": [
+      { "name": "Varkala North Cliff", "lat": 8.7369, "lng": 76.7039, "type": "viewpoint" },
+      { "name": "Papanasam Beach", "lat": 8.7328, "lng": 76.7078, "type": "beach" },
+      { "name": "Janardhana Swami Temple", "lat": 8.7289, "lng": 76.7164, "type": "heritage" },
+      { "name": "Kappil Beach & Backwaters", "lat": 8.7844, "lng": 76.6778, "type": "nature" }
+    ]
+  },
+  "hampi": {
+    "id": "hampi",
+    "name": "Hampi",
+    "state": "Karnataka",
+    "country": "India",
+    "lat": 15.3350,
+    "lng": 76.4600,
+    "zoom": 13,
+    "bounds": { "minLat": 15.28, "maxLat": 15.40, "minLng": 76.40, "maxLng": 76.52 },
+    "attractions": [
+      { "name": "Virupaksha Temple", "lat": 15.3353, "lng": 76.4597, "type": "heritage" },
+      { "name": "Vijaya Vittala Stone Chariot", "lat": 15.3392, "lng": 76.4789, "type": "heritage" },
+      { "name": "Matanga Hill Sunrise", "lat": 15.3314, "lng": 76.4678, "type": "viewpoint" },
+      { "name": "Lotus Mahal & Elephant Stables", "lat": 15.3208, "lng": 76.4719, "type": "heritage" }
+    ]
+  },
+  "varanasi": {
+    "id": "varanasi",
+    "name": "Varanasi",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "lat": 25.3176,
+    "lng": 82.9739,
+    "zoom": 13,
+    "bounds": { "minLat": 25.25, "maxLat": 25.38, "minLng": 82.90, "maxLng": 83.05 },
+    "attractions": [
+      { "name": "Dashashwamedh Ghat Ganga Aarti", "lat": 25.3069, "lng": 83.0108, "type": "heritage" },
+      { "name": "Kashi Vishwanath Temple", "lat": 25.3109, "lng": 83.0107, "type": "heritage" },
+      { "name": "Assi Ghat Morning Aarti", "lat": 25.2897, "lng": 83.0061, "type": "culture" },
+      { "name": "Sarnath Deer Park", "lat": 25.3811, "lng": 83.0225, "type": "heritage" }
+    ]
+  },
+  "rishikesh": {
+    "id": "rishikesh",
+    "name": "Rishikesh",
+    "state": "Uttarakhand",
+    "country": "India",
+    "lat": 30.0869,
+    "lng": 78.2676,
+    "zoom": 13,
+    "bounds": { "minLat": 30.02, "maxLat": 30.15, "minLng": 78.20, "maxLng": 78.35 },
+    "attractions": [
+      { "name": "Laxman Jhula & Tapovan", "lat": 30.1294, "lng": 78.3247, "type": "sight" },
+      { "name": "Triveni Ghat Evening Aarti", "lat": 30.1044, "lng": 78.2936, "type": "culture" },
+      { "name": "Beatles Ashram (Chaurasi Kutia)", "lat": 30.1136, "lng": 78.3131, "type": "heritage" },
+      { "name": "Shivpuri River Rafting Camp", "lat": 30.1383, "lng": 78.3889, "type": "adventure" }
+    ]
+  },
+  "andaman": {
+    "id": "andaman",
+    "name": "Andaman Islands",
+    "state": "Andaman & Nicobar",
+    "country": "India",
+    "lat": 11.6234,
+    "lng": 92.7265,
+    "zoom": 11,
+    "bounds": { "minLat": 11.40, "maxLat": 12.10, "minLng": 92.60, "maxLng": 93.10 },
+    "attractions": [
+      { "name": "Radhanagar Beach Havelock", "lat": 11.9839, "lng": 92.9511, "type": "beach" },
+      { "name": "Cellular Jail National Memorial", "lat": 11.6742, "lng": 92.7478, "type": "heritage" },
+      { "name": "Elephant Beach Coral Reef", "lat": 12.0003, "lng": 92.9469, "type": "adventure" },
+      { "name": "Ross Island British Ruins", "lat": 11.6708, "lng": 92.7619, "type": "heritage" }
+    ]
+  },
+  "darjeeling": {
+    "id": "darjeeling",
+    "name": "Darjeeling",
+    "state": "West Bengal",
+    "country": "India",
+    "lat": 27.0410,
+    "lng": 88.2663,
+    "zoom": 13,
+    "bounds": { "minLat": 26.95, "maxLat": 27.12, "minLng": 88.20, "maxLng": 88.35 },
+    "attractions": [
+      { "name": "Tiger Hill Kanchenjunga Sunrise", "lat": 26.9944, "lng": 88.2867, "type": "viewpoint" },
+      { "name": "Batasia Loop & War Memorial", "lat": 27.0167, "lng": 88.2472, "type": "sight" },
+      { "name": "Happy Valley Tea Estate", "lat": 27.0544, "lng": 88.2583, "type": "culture" },
+      { "name": "Darjeeling Himalayan Toy Train", "lat": 27.0378, "lng": 88.2631, "type": "heritage" }
+    ]
+  },
+  "agra": {
+    "id": "agra",
+    "name": "Agra",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "lat": 27.1767,
+    "lng": 78.0081,
+    "zoom": 13,
+    "bounds": { "minLat": 27.10, "maxLat": 27.25, "minLng": 77.92, "maxLng": 78.10 },
+    "attractions": [
+      { "name": "Taj Mahal", "lat": 27.1751, "lng": 78.0421, "type": "heritage" },
+      { "name": "Agra Fort", "lat": 27.1795, "lng": 78.0211, "type": "heritage" },
+      { "name": "Mehtab Bagh Sunset View", "lat": 27.1800, "lng": 78.0425, "type": "viewpoint" },
+      { "name": "Fatehpur Sikri", "lat": 27.0944, "lng": 77.6669, "type": "heritage" }
+    ]
+  },
+  "maldives": {
+    "id": "maldives",
+    "name": "Maldives",
+    "state": "Kaafu Atoll",
+    "country": "Maldives",
+    "lat": 4.1755,
+    "lng": 73.5093,
+    "zoom": 11,
+    "bounds": { "minLat": 3.80, "maxLat": 4.50, "minLng": 73.30, "maxLng": 73.70 },
+    "attractions": [
+      { "name": "Male Grand Friday Mosque", "lat": 4.1783, "lng": 73.5117, "type": "culture" },
+      { "name": "Banana Reef Marine Reserve", "lat": 4.2369, "lng": 73.5386, "type": "nature" },
+      { "name": "Maafushi Bikini Beach", "lat": 3.9408, "lng": 73.4908, "type": "beach" }
+    ]
+  },
+  "swiss-alps": {
+    "id": "swiss-alps",
+    "name": "Swiss Alps",
+    "state": "Bernese Oberland",
+    "country": "Switzerland",
+    "lat": 46.6863,
+    "lng": 7.8632,
+    "zoom": 11,
+    "bounds": { "minLat": 45.90, "maxLat": 46.90, "minLng": 7.60, "maxLng": 8.50 },
+    "attractions": [
+      { "name": "Jungfraujoch Top of Europe", "lat": 46.5475, "lng": 7.9825, "type": "viewpoint" },
+      { "name": "Interlaken Lake Brienz Cruise", "lat": 46.6869, "lng": 7.8631, "type": "nature" },
+      { "name": "Grindelwald First Cliff Walk", "lat": 46.6244, "lng": 8.0411, "type": "adventure" },
+      { "name": "Matterhorn Zermatt View", "lat": 45.9766, "lng": 7.7491, "type": "nature" }
+    ]
+  },
+  "thailand": {
+    "id": "thailand",
+    "name": "Thailand",
+    "state": "Bangkok & Phuket",
+    "country": "Thailand",
+    "lat": 13.7563,
+    "lng": 100.5018,
+    "zoom": 12,
+    "bounds": { "minLat": 7.80, "maxLat": 14.10, "minLng": 98.20, "maxLng": 100.80 },
+    "attractions": [
+      { "name": "Grand Palace Bangkok", "lat": 13.7500, "lng": 100.4914, "type": "heritage" },
+      { "name": "Wat Arun Temple of Dawn", "lat": 13.7436, "lng": 100.4889, "type": "heritage" },
+      { "name": "Phi Phi Islands Maya Bay", "lat": 7.7408, "lng": 98.7783, "type": "beach" },
+      { "name": "Chatuchak Weekend Market", "lat": 13.7997, "lng": 100.5508, "type": "culture" }
+    ]
+  },
+  "paris": {
+    "id": "paris",
+    "name": "Paris",
+    "state": "Île-de-France",
+    "country": "France",
+    "lat": 48.8566,
+    "lng": 2.3522,
+    "zoom": 13,
+    "bounds": { "minLat": 48.80, "maxLat": 48.92, "minLng": 2.22, "maxLng": 2.45 },
+    "attractions": [
+      { "name": "Eiffel Tower", "lat": 48.8584, "lng": 2.2945, "type": "sight" },
+      { "name": "Louvre Museum", "lat": 48.8606, "lng": 2.3376, "type": "heritage" },
+      { "name": "Cathédrale Notre-Dame", "lat": 48.8530, "lng": 2.3499, "type": "heritage" },
+      { "name": "Montmartre & Sacré-Cœur", "lat": 48.8867, "lng": 2.3431, "type": "viewpoint" },
+      { "name": "Arc de Triomphe Champs-Élysées", "lat": 48.8738, "lng": 2.2950, "type": "sight" }
+    ]
+  },
+  "singapore": {
+    "id": "singapore",
+    "name": "Singapore",
+    "state": "Singapore",
+    "country": "Singapore",
+    "lat": 1.3521,
+    "lng": 103.8198,
+    "zoom": 12,
+    "bounds": { "minLat": 1.22, "maxLat": 1.48, "minLng": 103.60, "maxLng": 104.05 },
+    "attractions": [
+      { "name": "Gardens by the Bay Supertrees", "lat": 1.2816, "lng": 103.8636, "type": "sight" },
+      { "name": "Marina Bay Sands SkyPark", "lat": 1.2834, "lng": 103.8607, "type": "viewpoint" },
+      { "name": "Sentosa Island Palawan Beach", "lat": 1.2486, "lng": 103.8217, "type": "beach" },
+      { "name": "Chinatown & Buddha Tooth Relic", "lat": 1.2814, "lng": 103.8444, "type": "culture" }
+    ]
+  },
+  "dubai": {
+    "id": "dubai",
+    "name": "Dubai",
+    "state": "Dubai",
+    "country": "United Arab Emirates",
+    "lat": 25.2048,
+    "lng": 55.2708,
+    "zoom": 12,
+    "bounds": { "minLat": 25.00, "maxLat": 25.35, "minLng": 55.10, "maxLng": 55.45 },
+    "attractions": [
+      { "name": "Burj Khalifa Observation Deck", "lat": 25.1972, "lng": 55.2744, "type": "viewpoint" },
+      { "name": "The Dubai Mall & Fountains", "lat": 25.1985, "lng": 55.2796, "type": "sight" },
+      { "name": "Dubai Marina Walk", "lat": 25.0805, "lng": 55.1403, "type": "relaxation" },
+      { "name": "Al Fahidi Historical Fort", "lat": 25.2631, "lng": 55.2972, "type": "heritage" },
+      { "name": "Red Dunes Desert Safari", "lat": 24.8700, "lng": 55.6500, "type": "adventure" }
+    ]
+  },
+  "istanbul": {
+    "id": "istanbul",
+    "name": "Istanbul",
+    "state": "Marmara",
+    "country": "Türkiye",
+    "lat": 41.0082,
+    "lng": 28.9784,
+    "zoom": 13,
+    "bounds": { "minLat": 40.90, "maxLat": 41.15, "minLng": 28.85, "maxLng": 29.15 },
+    "attractions": [
+      { "name": "Hagia Sophia Mosque", "lat": 41.0086, "lng": 28.9802, "type": "heritage" },
+      { "name": "Blue Mosque (Sultanahmet)", "lat": 41.0055, "lng": 28.9768, "type": "heritage" },
+      { "name": "Topkapi Palace", "lat": 41.0115, "lng": 28.9833, "type": "heritage" },
+      { "name": "Galata Tower Bosphorus View", "lat": 41.0256, "lng": 28.9741, "type": "viewpoint" },
+      { "name": "Grand Bazaar Market", "lat": 41.0107, "lng": 28.9680, "type": "culture" }
+    ]
+  },
+  "cape-town": {
+    "id": "cape-town",
+    "name": "Cape Town",
+    "state": "Western Cape",
+    "country": "South Africa",
+    "lat": -33.9249,
+    "lng": 18.4241,
+    "zoom": 12,
+    "bounds": { "minLat": -34.35, "maxLat": -33.80, "minLng": 18.30, "maxLng": 18.70 },
+    "attractions": [
+      { "name": "Table Mountain Aerial Cableway", "lat": -33.9575, "lng": 18.4031, "type": "viewpoint" },
+      { "name": "V&A Waterfront", "lat": -33.9036, "lng": 18.4206, "type": "culture" },
+      { "name": "Boulders Beach African Penguins", "lat": -34.1972, "lng": 18.4514, "type": "nature" },
+      { "name": "Cape of Good Hope Point", "lat": -34.3568, "lng": 18.4975, "type": "nature" }
+    ]
+  },
+  "ananthapuram": {
+    "id": "ananthapuram",
+    "name": "Ananthapuram",
+    "state": "Andhra Pradesh",
+    "country": "India",
+    "lat": 14.6819,
+    "lng": 77.6006,
+    "zoom": 13,
+    "bounds": { "minLat": 14.55, "maxLat": 14.80, "minLng": 77.50, "maxLng": 77.72 },
+    "attractions": [
+      { "name": "Lepakshi Veerabhadra Temple", "lat": 13.8028, "lng": 77.6078, "type": "heritage" },
+      { "name": "Anantapur Clock Tower", "lat": 14.6833, "lng": 77.6000, "type": "sight" },
+      { "name": "ISKCON Temple Anantapur", "lat": 14.6739, "lng": 77.5911, "type": "heritage" },
+      { "name": "Bugga Ramalingeswara Swamy", "lat": 14.9781, "lng": 78.0289, "type": "heritage" }
+    ]
+  },
+  "kadiri": {
+    "id": "kadiri",
+    "name": "Kadiri",
+    "state": "Andhra Pradesh",
+    "country": "India",
+    "lat": 14.1130,
+    "lng": 78.1590,
+    "zoom": 13,
+    "bounds": { "minLat": 14.00, "maxLat": 14.25, "minLng": 78.05, "maxLng": 78.28 },
+    "attractions": [
+      { "name": "Sri Lakshmi Narasimha Swamy Temple", "lat": 14.1139, "lng": 78.1581, "type": "heritage" },
+      { "name": "Thimmamma Marrimanu Giant Banyan", "lat": 14.0289, "lng": 78.3242, "type": "nature" },
+      { "name": "Kadiri Hill Viewpoint", "lat": 14.1250, "lng": 78.1650, "type": "viewpoint" }
+    ]
+  },
+  "gulmarg": {
+    "id": "gulmarg",
+    "name": "Gulmarg",
+    "state": "Jammu & Kashmir",
+    "country": "India",
+    "lat": 34.0484,
+    "lng": 74.3805,
+    "zoom": 13,
+    "bounds": { "minLat": 33.95, "maxLat": 34.15, "minLng": 74.30, "maxLng": 74.45 },
+    "attractions": [
+      { "name": "Gulmarg Gondola Phase 1 & 2", "lat": 34.0517, "lng": 74.3822, "type": "adventure" },
+      { "name": "Apharwat Peak Snowline", "lat": 34.0167, "lng": 74.3333, "type": "viewpoint" },
+      { "name": "St. Mary's Church Gulmarg", "lat": 34.0489, "lng": 74.3850, "type": "heritage" },
+      { "name": "Strawberry Valley Pine Trail", "lat": 34.0428, "lng": 74.3911, "type": "nature" }
+    ]
+  },
+  "tawang": {
+    "id": "tawang",
+    "name": "Tawang",
+    "state": "Arunachal Pradesh",
+    "country": "India",
+    "lat": 27.5861,
+    "lng": 91.8594,
+    "zoom": 12,
+    "bounds": { "minLat": 27.45, "maxLat": 27.75, "minLng": 91.75, "maxLng": 92.15 },
+    "attractions": [
+      { "name": "Tawang Monastery (Galden Namgyal)", "lat": 27.5858, "lng": 91.8578, "type": "heritage" },
+      { "name": "Sela Pass High-Altitude Lake", "lat": 27.5056, "lng": 92.1039, "type": "nature" },
+      { "name": "Madhuri (Shonga-tser) Lake", "lat": 27.7125, "lng": 91.7558, "type": "nature" },
+      { "name": "Nuranang (Bong Bong) Falls", "lat": 27.5750, "lng": 92.0167, "type": "nature" }
+    ]
+  },
+  "rann-of-kutch": {
+    "id": "rann-of-kutch",
+    "name": "Rann of Kutch",
+    "state": "Gujarat",
+    "country": "India",
+    "lat": 23.8340,
+    "lng": 69.8430,
+    "zoom": 11,
+    "bounds": { "minLat": 23.50, "maxLat": 24.20, "minLng": 69.40, "maxLng": 70.40 },
+    "attractions": [
+      { "name": "Great White Rann Salt Desert", "lat": 23.8342, "lng": 69.8433, "type": "nature" },
+      { "name": "Dhordo Rann Utsav Tent City", "lat": 23.7889, "lng": 69.8656, "type": "culture" },
+      { "name": "Kalo Dungar Black Hill", "lat": 23.9317, "lng": 69.7917, "type": "viewpoint" },
+      { "name": "Hodka Artisan Village", "lat": 23.6708, "lng": 69.6739, "type": "culture" }
+    ]
+  }
+}
+

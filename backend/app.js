@@ -18,6 +18,7 @@ const partnerRoutes = require("./routes/partnerRoutes");
 const expenseRoutes = require("./routes/expenseRoutes");
 const financialRoutes = require("./routes/financialRoutes");
 const aiRoutes = require("./routes/aiRoutes");
+const itineraryRoutes = require("./routes/itineraryRoutes");
 
 // Exact CORS configuration for production and local development
 const allowedOrigins = [
@@ -131,6 +132,7 @@ app.use("/api/partners", partnerRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/financials", financialRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/itineraries", itineraryRoutes);
 
 // Handle unknown API routes
 app.use("/api", (req, res) => {

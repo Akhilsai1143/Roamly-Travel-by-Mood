@@ -640,6 +640,18 @@ async function runMigration() {
       console.log("Seeding complete! 5 Partners, 3 Kerala Travel Packages, and initial Business Expenses created.");
     }
 
+    // 8. Check if saved_itineraries table exists
+    const [itineraryTables] = await pool.query("SHOW TABLES LIKE 'saved_itineraries'");
+    if (itineraryTables.length === 0) {
+      console.log("Table 'saved_itineraries' does not exist. Creating from SQL file...");
+      const sqlPath = path.join(__dirname, "migrations", "create_saved_itineraries_table.sql");
+      const sql = fs.readFileSync(sqlPath, "utf-8");
+      await pool.query(sql);
+      console.log("Table 'saved_itineraries' created successfully.");
+    } else {
+      console.log("Table 'saved_itineraries' already exists. Safe check passed.");
+    }
+
     console.log("All migrations and checks completed successfully!");
     const [finalSchema] = await pool.query("DESCRIBE bookings");
     console.table(finalSchema);
