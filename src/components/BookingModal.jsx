@@ -284,20 +284,38 @@ export default function BookingModal({
           const destParam = destination.id || destination.name;
           const res = await getPublicPackages({ destinationId: destParam });
           if (isMounted && res.packages && res.packages.length > 0) {
-            const liveTiers = new Set(res.packages.map((p) => p.tier));
-            const merged = [...res.packages];
-            fallbackTiers.forEach((fb) => {
-              if (!liveTiers.has(fb.tier)) {
-                merged.push(fb);
+            // Strictly match packages belonging to the selected destination
+            const destMatches = res.packages.filter((p) => {
+              if (destination.id && p.destination_id) {
+                return Number(p.destination_id) === Number(destination.id) || String(p.destination_id).toLowerCase() === String(destination.id).toLowerCase();
               }
+              if (p.destination_name && destination.name) {
+                return (
+                  p.destination_name.toLowerCase().includes(destination.name.toLowerCase()) ||
+                  destination.name.toLowerCase().includes(p.destination_name.toLowerCase())
+                );
+              }
+              return false;
             });
-            merged.sort((a, b) => {
-              const order = { standard: 1, comfort: 2, premium: 3 };
-              return (order[a.tier] || 9) - (order[b.tier] || 9);
+
+            // Ensure exactly ONE package per tier (Standard, Comfort, Premium)
+            const tierMap = new Map();
+            destMatches.forEach((p) => {
+              const t = (p.tier || "").toLowerCase();
+              if (t && !tierMap.has(t)) tierMap.set(t, p);
             });
-            setAvailablePackages(merged);
+            fallbackTiers.forEach((fb) => {
+              const t = (fb.tier || "").toLowerCase();
+              if (t && !tierMap.has(t)) tierMap.set(t, fb);
+            });
+
+            const cleanTiers = ["standard", "comfort", "premium"]
+              .map((t) => tierMap.get(t))
+              .filter(Boolean);
+
+            setAvailablePackages(cleanTiers);
             if (!packageData) {
-              const matched = merged.find((p) => p.tier === chosenInitial.tier) || merged[0];
+              const matched = cleanTiers.find((p) => (p.tier || "").toLowerCase() === (chosenInitial?.tier || "").toLowerCase()) || cleanTiers[0];
               setSelectedPkg(matched);
             }
           }
@@ -763,7 +781,11 @@ export default function BookingModal({
               {/* CLEAN 3-SEGMENT TIER SELECTOR */}
               <div className="pkg-tier-segment-bar" role="tablist" aria-label="Select Package Tier">
                 {availablePackages.map((pkg) => {
-                  const isSelected = selectedPkg?.tier === pkg.tier || selectedPkg?.id === pkg.id;
+                  const isSelected = (selectedPkg?.id && pkg?.id)
+                    ? String(selectedPkg.id) === String(pkg.id)
+                    : (selectedPkg?.tier && pkg?.tier)
+                    ? String(selectedPkg.tier).toLowerCase() === String(pkg.tier).toLowerCase()
+                    : false;
                   const rate = Number(pkg.pricePerPerson || pkg.price_per_person || 0);
                   const tierLabel = pkg.tier ? pkg.tier.charAt(0).toUpperCase() + pkg.tier.slice(1) : "Tier";
 

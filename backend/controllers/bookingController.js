@@ -2,12 +2,19 @@ const pool = require("../config/db");
 const { isDbConnectionError } = pool;
 const { notifyBookingCreated, notifyBookingStatusUpdated } = require("../config/socket");
 const crypto = require("crypto");
+const memoryUserStore = require("../services/memoryUserStore");
 
 let fallbackBookings = [];
+let fallbackDestinations = [];
 try {
   fallbackBookings = require("../data/bookings.json");
 } catch {
   fallbackBookings = [];
+}
+try {
+  fallbackDestinations = require("../data/fallbackDestinations.json");
+} catch {
+  fallbackDestinations = [];
 }
 
 const VALID_STATUSES = [
@@ -89,12 +96,16 @@ async function generateUniqueBookingReference() {
     const timeSlice = Date.now().toString().slice(-4);
     const reference = `RMY-${timeSlice}-${randomHex}`;
 
-    const [existing] = await pool.query(
-      "SELECT id FROM bookings WHERE booking_reference = ? LIMIT 1",
-      [reference]
-    );
+    try {
+      const [existing] = await pool.query(
+        "SELECT id FROM bookings WHERE booking_reference = ? LIMIT 1",
+        [reference]
+      );
 
-    if (existing.length === 0) {
+      if (existing.length === 0) {
+        return reference;
+      }
+    } catch {
       return reference;
     }
   }
@@ -180,12 +191,17 @@ exports.createBooking = async (req, res, next) => {
 
     // If userId not set from token, link to existing user with this email
     if (!userId && contactEmail) {
-      const [existingUser] = await pool.query(
-        "SELECT id FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1",
-        [contactEmail]
-      );
-      if (existingUser.length > 0) {
-        userId = existingUser[0].id;
+      try {
+        const [existingUser] = await pool.query(
+          "SELECT id FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1",
+          [contactEmail]
+        );
+        if (existingUser.length > 0) {
+          userId = existingUser[0].id;
+        }
+      } catch {
+        const memUser = memoryUserStore.findByEmail(contactEmail);
+        if (memUser) userId = memUser.id;
       }
     }
 
@@ -196,40 +212,56 @@ exports.createBooking = async (req, res, next) => {
     const rawDestName = req.body.destinationName || "";
     const numDestId = Number(rawDestId);
 
-    if (Number.isInteger(numDestId) && numDestId > 0) {
-      const [rows] = await pool.query(
-        "SELECT id, name, country, state, image, budget FROM destinations WHERE id = ? LIMIT 1",
-        [numDestId]
-      );
-      if (rows.length > 0) destination = rows[0];
-    }
-
-    if (!destination && rawDestName) {
-      const [rows] = await pool.query(
-        "SELECT id, name, country, state, image, budget FROM destinations WHERE LOWER(name) = LOWER(?) LIMIT 1",
-        [String(rawDestName).trim()]
-      );
-      if (rows.length > 0) destination = rows[0];
-    }
-
-    if (!destination && rawDestId) {
-      const cleanTerm = String(rawDestId).trim().toLowerCase();
-      const [rowsExact] = await pool.query(
-        "SELECT id, name, country, state, image, budget FROM destinations WHERE LOWER(name) = ? LIMIT 1",
-        [cleanTerm]
-      );
-      if (rowsExact.length > 0) {
-        destination = rowsExact[0];
-      } else {
-        const [rowsFuzzy] = await pool.query(
-          `SELECT id, name, country, state, image, budget FROM destinations 
-           WHERE LOWER(name) LIKE ? 
-              OR LOWER(COALESCE(image, '')) LIKE ?
-           ORDER BY id ASC LIMIT 1`,
-          [`%${cleanTerm}%`, `%/${cleanTerm}/%`]
+    try {
+      if (Number.isInteger(numDestId) && numDestId > 0) {
+        const [rows] = await pool.query(
+          "SELECT id, name, country, state, image, budget FROM destinations WHERE id = ? LIMIT 1",
+          [numDestId]
         );
-        if (rowsFuzzy.length > 0) destination = rowsFuzzy[0];
+        if (rows.length > 0) destination = rows[0];
       }
+
+      if (!destination && rawDestName) {
+        const [rows] = await pool.query(
+          "SELECT id, name, country, state, image, budget FROM destinations WHERE LOWER(name) = LOWER(?) LIMIT 1",
+          [String(rawDestName).trim()]
+        );
+        if (rows.length > 0) destination = rows[0];
+      }
+
+      if (!destination && rawDestId) {
+        const cleanTerm = String(rawDestId).trim().toLowerCase();
+        const [rowsExact] = await pool.query(
+          "SELECT id, name, country, state, image, budget FROM destinations WHERE LOWER(name) = ? LIMIT 1",
+          [cleanTerm]
+        );
+        if (rowsExact.length > 0) {
+          destination = rowsExact[0];
+        } else {
+          const [rowsFuzzy] = await pool.query(
+            `SELECT id, name, country, state, image, budget FROM destinations 
+             WHERE LOWER(name) LIKE ? 
+                OR LOWER(COALESCE(image, '')) LIKE ?
+             ORDER BY id ASC LIMIT 1`,
+            [`%${cleanTerm}%`, `%/${cleanTerm}/%`]
+          );
+          if (rowsFuzzy.length > 0) destination = rowsFuzzy[0];
+        }
+      }
+    } catch {
+      // Offline fallback lookup
+    }
+
+    if (!destination && (rawDestId || rawDestName)) {
+      const cleanTerm = String(rawDestId || rawDestName).trim().toLowerCase();
+      const numId = Number(cleanTerm);
+      destination = fallbackDestinations.find(
+        (d) =>
+          (Number.isInteger(numId) && Number(d.id) === numId) ||
+          String(d.id).toLowerCase() === cleanTerm ||
+          (d.name && d.name.toLowerCase() === cleanTerm) ||
+          (d.name && d.name.toLowerCase().includes(cleanTerm))
+      );
     }
 
     if (destination) {
@@ -306,16 +338,16 @@ exports.createBooking = async (req, res, next) => {
       ? (hotelName || "Roamly Boutique Stay")
       : (destination?.name || rawDestName || "Roamly Destination");
 
-    let packageId = null;
-    let packageNameSnapshot = null;
-    let packageTierSnapshot = null;
-    let packageDetailsSnapshot = null;
+    let packageId = (rawPackageId && Number.isInteger(Number(rawPackageId))) ? Number(rawPackageId) : null;
+    let packageNameSnapshot = req.body.packageName || req.body.packageDetailsSnapshot?.name || (destination ? `${destination.name} Tailored Journey` : null);
+    let packageTierSnapshot = req.body.packageTier || req.body.packageDetailsSnapshot?.tier || null;
+    let packageDetailsSnapshot = req.body.packageDetailsSnapshot || null;
     let estimatedBudget = rawBudget ? Number(rawBudget) : null;
     let estimatedTotal = rawTotal ? Number(rawTotal) : (estimatedBudget || null);
 
     // If standalone hotel booking, create clean snapshot
     if (isHotel) {
-      packageDetailsSnapshot = {
+      packageDetailsSnapshot = packageDetailsSnapshot || {
         bookingType: "hotel",
         hotelId,
         hotelName,
@@ -329,9 +361,10 @@ exports.createBooking = async (req, res, next) => {
         },
         capturedAt: new Date().toISOString()
       };
-    } else {
+    } else if (!packageDetailsSnapshot) {
       packageDetailsSnapshot = {
-        name: `${destination?.name || "Roamly"} Tailored Journey`,
+        name: packageNameSnapshot || `${destination?.name || "Roamly"} Tailored Journey`,
+        tier: packageTierSnapshot || "standard",
         pricing: {
           totalPrice: estimatedTotal,
           currency: "INR"
@@ -343,82 +376,144 @@ exports.createBooking = async (req, res, next) => {
     const bookingReference = await generateUniqueBookingReference();
 
     // Insert booking into MySQL
-    const [result] = await pool.query(
-      `INSERT INTO bookings
-        (
-          booking_reference,
-          user_id,
-          destination_id,
-          destination_name_snapshot,
-          booking_type,
-          hotel_id,
-          hotel_name,
-          hotel_location,
-          hotel_image,
-          room_type,
-          room_number,
-          rooms_count,
-          package_id,
-          package_name_snapshot,
-          package_tier_snapshot,
-          package_details_snapshot,
-          start_date,
-          end_date,
+    try {
+      const [result] = await pool.query(
+        `INSERT INTO bookings
+          (
+            booking_reference,
+            user_id,
+            destination_id,
+            destination_name_snapshot,
+            booking_type,
+            hotel_id,
+            hotel_name,
+            hotel_location,
+            hotel_image,
+            room_type,
+            room_number,
+            rooms_count,
+            package_id,
+            package_name_snapshot,
+            package_tier_snapshot,
+            package_details_snapshot,
+            start_date,
+            end_date,
+            travellers,
+            contact_name,
+            contact_email,
+            contact_phone,
+            estimated_budget,
+            estimated_total,
+            special_requests,
+            status
+          )
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+        [
+          bookingReference,
+          userId,
+          destinationId,
+          destinationNameSnapshot,
+          bookingType,
+          hotelId,
+          hotelName,
+          hotelLocation,
+          hotelImage,
+          roomType,
+          roomNumber,
+          roomsCount,
+          packageId,
+          packageNameSnapshot,
+          packageTierSnapshot,
+          packageDetailsSnapshot ? JSON.stringify(packageDetailsSnapshot) : null,
+          startDate,
+          endDate,
           travellers,
-          contact_name,
-          contact_email,
-          contact_phone,
-          estimated_budget,
-          estimated_total,
-          special_requests,
-          status
-        )
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
-      [
-        bookingReference,
-        userId,
-        destinationId,
-        destinationNameSnapshot,
-        bookingType,
-        hotelId,
-        hotelName,
-        hotelLocation,
-        hotelImage,
-        roomType,
-        roomNumber,
-        roomsCount,
-        packageId,
-        packageNameSnapshot,
-        packageTierSnapshot,
-        JSON.stringify(packageDetailsSnapshot),
-        startDate,
-        endDate,
-        travellers,
-        contactName,
-        contactEmail,
-        contactPhone,
-        estimatedBudget,
-        estimatedTotal,
-        specialRequests
-      ]
-    );
+          contactName,
+          contactEmail,
+          contactPhone,
+          estimatedBudget,
+          estimatedTotal,
+          specialRequests
+        ]
+      );
 
-    const bookingId = result.insertId;
+      const bookingId = result.insertId;
 
-    const [rows] = await pool.query(
-      getBookingBaseQuery("b.id = ?"),
-      [bookingId]
-    );
+      const [rows] = await pool.query(
+        getBookingBaseQuery("b.id = ?"),
+        [bookingId]
+      );
 
-    const savedBooking = formatBookingRow(rows[0]);
-    notifyBookingCreated(savedBooking);
+      const savedBooking = formatBookingRow(rows[0]);
+      notifyBookingCreated(savedBooking);
 
-    return res.status(201).json({
-      message: isHotel ? "Hotel reservation confirmed successfully." : "Trip booking request submitted successfully.",
-      booking: savedBooking,
-      bookingReference: savedBooking.bookingReference,
-      status: "pending"
-    });
+      return res.status(201).json({
+        message: isHotel ? "Hotel reservation confirmed successfully." : "Trip booking request submitted successfully.",
+        booking: savedBooking,
+        bookingReference: savedBooking.bookingReference,
+        status: "pending"
+      });
+    } catch (dbErr) {
+      if (isDbConnectionError(dbErr) || dbErr.code === "ER_NO_SUCH_TABLE" || dbErr.code === "ER_BAD_FIELD_ERROR" || !process.env.DB_HOST || process.env.DB_HOST === "localhost") {
+        console.warn("[Booking Offline Fallback]:", dbErr.message);
+        const fallbackId = Date.now();
+        const offlineBooking = {
+          id: fallbackId,
+          booking_reference: bookingReference,
+          booking_type: bookingType,
+          user_id: userId,
+          user_name: contactName,
+          user_email: contactEmail,
+          destination_id: destinationId,
+          destination_name: destinationNameSnapshot,
+          destination_name_snapshot: destinationNameSnapshot,
+          destination_image: destination?.image || hotelImage || null,
+          destination_country: destination?.country || "India",
+          destination_state: destination?.state || hotelLocation || null,
+          hotel_id: hotelId,
+          hotel_name: hotelName,
+          hotel_location: hotelLocation,
+          hotel_image: hotelImage,
+          room_type: roomType,
+          room_number: roomNumber,
+          rooms_count: roomsCount,
+          package_id: packageId,
+          package_name_snapshot: packageNameSnapshot,
+          package_tier_snapshot: packageTierSnapshot,
+          package_details_snapshot: packageDetailsSnapshot,
+          start_date: startDate,
+          end_date: endDate,
+          travellers,
+          contact_name: contactName,
+          contact_email: contactEmail,
+          contact_phone: contactPhone,
+          estimated_budget: estimatedBudget,
+          estimated_total: estimatedTotal,
+          special_requests: specialRequests,
+          status: "pending",
+          payment_status: "unpaid",
+          payment_id: null,
+          rejection_reason: null,
+          confirmed_by: null,
+          confirmed_by_name: null,
+          confirmed_at: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        fallbackBookings.unshift(offlineBooking);
+        const formatted = formatBookingRow(offlineBooking);
+        notifyBookingCreated(formatted);
+
+        return res.status(201).json({
+          message: isHotel ? "Hotel reservation confirmed successfully." : "Trip booking request submitted successfully.",
+          booking: formatted,
+          bookingReference: formatted.bookingReference,
+          status: "pending"
+        });
+      }
+      throw dbErr;
+    }
   } catch (error) {
     next(error);
   }
@@ -472,18 +567,34 @@ exports.getMyBookingById = async (req, res, next) => {
       return res.status(400).json({ message: "Invalid booking ID." });
     }
 
-    const [rows] = await pool.query(
-      getBookingBaseQuery("b.id = ? AND (b.user_id = ? OR (b.contact_email IS NOT NULL AND LOWER(b.contact_email) = LOWER(?)))"),
-      [bookingId, req.user.id, req.user.email]
-    );
+    try {
+      const [rows] = await pool.query(
+        getBookingBaseQuery("b.id = ? AND (b.user_id = ? OR (b.contact_email IS NOT NULL AND LOWER(b.contact_email) = LOWER(?)))"),
+        [bookingId, req.user.id, req.user.email]
+      );
 
-    if (rows.length === 0) {
-      return res.status(404).json({
-        message: "Booking not found or access denied."
-      });
+      if (rows.length > 0) {
+        return res.json({ booking: formatBookingRow(rows[0]) });
+      }
+    } catch (dbErr) {
+      if (!isDbConnectionError(dbErr) && dbErr.code !== "ER_NO_SUCH_TABLE") {
+        throw dbErr;
+      }
     }
 
-    return res.json({ booking: formatBookingRow(rows[0]) });
+    const b = fallbackBookings.find(
+      (item) =>
+        Number(item.id) === bookingId &&
+        (Number(item.user_id) === Number(req.user.id) || (item.contact_email && item.contact_email.toLowerCase() === (req.user.email || "").toLowerCase()))
+    );
+
+    if (b) {
+      return res.json({ booking: formatBookingRow(b) });
+    }
+
+    return res.status(404).json({
+      message: "Booking not found or access denied."
+    });
   } catch (error) {
     next(error);
   }
@@ -644,49 +755,70 @@ exports.confirmBooking = async (req, res, next) => {
 
     // Safe conditional update to prevent conflicting or duplicate transitions
     const roomNumber = req.body?.roomNumber ? String(req.body.roomNumber).trim().slice(0, 50) : null;
-    const [result] = await pool.query(
-      `UPDATE bookings
-       SET status = 'confirmed',
-           confirmed_by = ?,
-           confirmed_at = NOW(),
-           room_number = COALESCE(?, room_number),
-           rejection_reason = NULL
-       WHERE id = ? AND status = 'pending'`,
-      [adminId, roomNumber, bookingId]
-    );
+    try {
+      const [result] = await pool.query(
+        `UPDATE bookings
+         SET status = 'confirmed',
+             confirmed_by = ?,
+             confirmed_at = NOW(),
+             room_number = COALESCE(?, room_number),
+             rejection_reason = NULL
+         WHERE id = ? AND status = 'pending'`,
+        [adminId, roomNumber, bookingId]
+      );
 
-    if (result.affectedRows === 0) {
-      // Check whether booking exists and current status
-      const [check] = await pool.query(
-        "SELECT id, status FROM bookings WHERE id = ?",
+      if (result.affectedRows === 0) {
+        // Check whether booking exists and current status
+        const [check] = await pool.query(
+          "SELECT id, status FROM bookings WHERE id = ?",
+          [bookingId]
+        );
+
+        if (check.length === 0) {
+          return res.status(404).json({ message: "Booking not found." });
+        }
+
+        return res.status(409).json({
+          message: `This booking cannot be confirmed because it is currently '${check[0].status}'.`,
+          currentStatus: check[0].status
+        });
+      }
+
+      // Fetch updated record with joins
+      const [rows] = await pool.query(
+        getBookingBaseQuery("b.id = ?"),
         [bookingId]
       );
 
-      if (check.length === 0) {
+      const updatedBooking = formatBookingRow(rows[0]);
+
+      // Emit real-time status update to user and admins
+      notifyBookingStatusUpdated(updatedBooking);
+
+      return res.json({
+        message: "Trip booking confirmed successfully.",
+        booking: updatedBooking
+      });
+    } catch (dbErr) {
+      if (isDbConnectionError(dbErr) || dbErr.code === "ER_NO_SUCH_TABLE") {
+        const fb = fallbackBookings.find((b) => Number(b.id) === bookingId);
+        if (fb) {
+          fb.status = "confirmed";
+          fb.confirmed_by = adminId;
+          fb.confirmed_at = new Date().toISOString();
+          if (roomNumber) fb.room_number = roomNumber;
+          fb.rejection_reason = null;
+          const updated = formatBookingRow(fb);
+          notifyBookingStatusUpdated(updated);
+          return res.json({
+            message: "Trip booking confirmed successfully.",
+            booking: updated
+          });
+        }
         return res.status(404).json({ message: "Booking not found." });
       }
-
-      return res.status(409).json({
-        message: `This booking cannot be confirmed because it is currently '${check[0].status}'.`,
-        currentStatus: check[0].status
-      });
+      throw dbErr;
     }
-
-    // Fetch updated record with joins
-    const [rows] = await pool.query(
-      getBookingBaseQuery("b.id = ?"),
-      [bookingId]
-    );
-
-    const updatedBooking = formatBookingRow(rows[0]);
-
-    // Emit real-time status update to user and admins
-    notifyBookingStatusUpdated(updatedBooking);
-
-    return res.json({
-      message: "Trip booking confirmed successfully.",
-      booking: updatedBooking
-    });
   } catch (error) {
     next(error);
   }
@@ -707,47 +839,67 @@ exports.rejectBooking = async (req, res, next) => {
       return res.status(400).json({ message: "Invalid booking ID." });
     }
 
-    // Safe conditional update to prevent conflicting transitions
-    const [result] = await pool.query(
-      `UPDATE bookings
-       SET status = 'rejected',
-           rejection_reason = ?,
-           confirmed_by = ?,
-           confirmed_at = NOW()
-       WHERE id = ? AND status = 'pending'`,
-      [rejectionReason, adminId, bookingId]
-    );
+    try {
+      // Safe conditional update to prevent conflicting transitions
+      const [result] = await pool.query(
+        `UPDATE bookings
+         SET status = 'rejected',
+             rejection_reason = ?,
+             confirmed_by = ?,
+             confirmed_at = NOW()
+         WHERE id = ? AND status = 'pending'`,
+        [rejectionReason, adminId, bookingId]
+      );
 
-    if (result.affectedRows === 0) {
-      const [check] = await pool.query(
-        "SELECT id, status FROM bookings WHERE id = ?",
+      if (result.affectedRows === 0) {
+        const [check] = await pool.query(
+          "SELECT id, status FROM bookings WHERE id = ?",
+          [bookingId]
+        );
+
+        if (check.length === 0) {
+          return res.status(404).json({ message: "Booking not found." });
+        }
+
+        return res.status(409).json({
+          message: `This booking cannot be rejected because it is currently '${check[0].status}'.`,
+          currentStatus: check[0].status
+        });
+      }
+
+      const [rows] = await pool.query(
+        getBookingBaseQuery("b.id = ?"),
         [bookingId]
       );
 
-      if (check.length === 0) {
+      const updatedBooking = formatBookingRow(rows[0]);
+
+      // Emit real-time status update
+      notifyBookingStatusUpdated(updatedBooking);
+
+      return res.json({
+        message: "Trip booking rejected.",
+        booking: updatedBooking
+      });
+    } catch (dbErr) {
+      if (isDbConnectionError(dbErr) || dbErr.code === "ER_NO_SUCH_TABLE") {
+        const fb = fallbackBookings.find((b) => Number(b.id) === bookingId);
+        if (fb) {
+          fb.status = "rejected";
+          fb.rejection_reason = rejectionReason;
+          fb.confirmed_by = adminId;
+          fb.confirmed_at = new Date().toISOString();
+          const updated = formatBookingRow(fb);
+          notifyBookingStatusUpdated(updated);
+          return res.json({
+            message: "Trip booking rejected.",
+            booking: updated
+          });
+        }
         return res.status(404).json({ message: "Booking not found." });
       }
-
-      return res.status(409).json({
-        message: `This booking cannot be rejected because it is currently '${check[0].status}'.`,
-        currentStatus: check[0].status
-      });
+      throw dbErr;
     }
-
-    const [rows] = await pool.query(
-      getBookingBaseQuery("b.id = ?"),
-      [bookingId]
-    );
-
-    const updatedBooking = formatBookingRow(rows[0]);
-
-    // Emit real-time status update
-    notifyBookingStatusUpdated(updatedBooking);
-
-    return res.json({
-      message: "Trip booking rejected.",
-      booking: updatedBooking
-    });
   } catch (error) {
     next(error);
   }
@@ -813,44 +965,68 @@ exports.cancelMyBooking = async (req, res, next) => {
       return res.status(400).json({ message: "Invalid booking ID." });
     }
 
-    const [result] = await pool.query(
-      `UPDATE bookings
-       SET status = 'cancelled'
-       WHERE id = ?
-         AND user_id = ?
-         AND status = 'pending'`,
-      [bookingId, userId]
-    );
-
-    if (result.affectedRows === 0) {
-      const [check] = await pool.query(
-        "SELECT id, user_id, status FROM bookings WHERE id = ?",
-        [bookingId]
+    try {
+      const [result] = await pool.query(
+        `UPDATE bookings
+         SET status = 'cancelled'
+         WHERE id = ?
+           AND user_id = ?
+           AND status = 'pending'`,
+        [bookingId, userId]
       );
 
-      if (check.length === 0 || check[0].user_id !== userId) {
-        return res.status(404).json({
-          message: "Booking not found or unauthorized."
+      if (result.affectedRows === 0) {
+        const [check] = await pool.query(
+          "SELECT id, user_id, status FROM bookings WHERE id = ?",
+          [bookingId]
+        );
+
+        if (check.length === 0 || check[0].user_id !== userId) {
+          return res.status(404).json({
+            message: "Booking not found or unauthorized."
+          });
+        }
+
+        return res.status(400).json({
+          message: `Booking cannot be cancelled because its status is already '${check[0].status}'.`
         });
       }
 
-      return res.status(400).json({
-        message: `Booking cannot be cancelled because its status is already '${check[0].status}'.`
+      const [rows] = await pool.query(
+        getBookingBaseQuery("b.id = ?"),
+        [bookingId]
+      );
+
+      const updatedBooking = formatBookingRow(rows[0]);
+      notifyBookingStatusUpdated(updatedBooking);
+
+      return res.json({
+        message: "Booking cancelled successfully.",
+        booking: updatedBooking
       });
+    } catch (dbErr) {
+      if (isDbConnectionError(dbErr) || dbErr.code === "ER_NO_SUCH_TABLE") {
+        const fb = fallbackBookings.find(
+          (b) => Number(b.id) === bookingId && (Number(b.user_id) === Number(userId) || (b.contact_email && b.contact_email.toLowerCase() === (req.user.email || "").toLowerCase()))
+        );
+        if (fb) {
+          if (fb.status !== "pending") {
+            return res.status(400).json({
+              message: `Booking cannot be cancelled because its status is already '${fb.status}'.`
+            });
+          }
+          fb.status = "cancelled";
+          const updated = formatBookingRow(fb);
+          notifyBookingStatusUpdated(updated);
+          return res.json({
+            message: "Booking cancelled successfully.",
+            booking: updated
+          });
+        }
+        return res.status(404).json({ message: "Booking not found or unauthorized." });
+      }
+      throw dbErr;
     }
-
-    const [rows] = await pool.query(
-      getBookingBaseQuery("b.id = ?"),
-      [bookingId]
-    );
-
-    const updatedBooking = formatBookingRow(rows[0]);
-    notifyBookingStatusUpdated(updatedBooking);
-
-    return res.json({
-      message: "Booking cancelled successfully.",
-      booking: updatedBooking
-    });
   } catch (error) {
     next(error);
   }
@@ -864,22 +1040,37 @@ exports.getBookingPackageDetails = async (req, res, next) => {
     const bookingId = req.params.id;
     const userId = req.user.id;
 
-    const [rows] = await pool.query(
-      getBookingBaseQuery("b.id = ? OR b.booking_reference = ?"),
-      [bookingId, bookingId]
-    );
+    let booking = null;
+    try {
+      const [rows] = await pool.query(
+        getBookingBaseQuery("b.id = ? OR b.booking_reference = ?"),
+        [bookingId, bookingId]
+      );
 
-    if (rows.length === 0) {
+      if (rows.length > 0) {
+        booking = rows[0];
+      }
+    } catch (dbErr) {
+      if (!isDbConnectionError(dbErr) && dbErr.code !== "ER_NO_SUCH_TABLE") {
+        throw dbErr;
+      }
+    }
+
+    if (!booking) {
+      booking = fallbackBookings.find(
+        (b) => String(b.id) === String(bookingId) || String(b.booking_reference) === String(bookingId)
+      );
+    }
+
+    if (!booking) {
       return res.status(404).json({
         success: false,
         message: "Booking not found."
       });
     }
 
-    const booking = rows[0];
-
     // Check ownership or admin privileges
-    if (booking.user_id !== userId && req.user.role !== "admin") {
+    if (booking.user_id !== userId && req.user.role !== "admin" && (booking.contact_email && booking.contact_email.toLowerCase() !== (req.user.email || "").toLowerCase())) {
       return res.status(403).json({
         success: false,
         message: "You are not authorized to view package details for this booking."
@@ -981,27 +1172,44 @@ exports.updateRoomNumber = async (req, res, next) => {
       return res.status(400).json({ message: "Invalid booking ID." });
     }
 
-    await pool.query(
-      "UPDATE bookings SET room_number = ? WHERE id = ?",
-      [roomNumber, bookingId]
-    );
+    try {
+      await pool.query(
+        "UPDATE bookings SET room_number = ? WHERE id = ?",
+        [roomNumber, bookingId]
+      );
 
-    const [rows] = await pool.query(
-      getBookingBaseQuery("b.id = ?"),
-      [bookingId]
-    );
+      const [rows] = await pool.query(
+        getBookingBaseQuery("b.id = ?"),
+        [bookingId]
+      );
 
-    if (rows.length === 0) {
-      return res.status(404).json({ message: "Booking not found." });
+      if (rows.length > 0) {
+        const updatedBooking = formatBookingRow(rows[0]);
+        notifyBookingStatusUpdated(updatedBooking);
+
+        return res.json({
+          message: "Room number updated successfully.",
+          booking: updatedBooking
+        });
+      }
+    } catch (dbErr) {
+      if (!isDbConnectionError(dbErr) && dbErr.code !== "ER_NO_SUCH_TABLE") {
+        throw dbErr;
+      }
     }
 
-    const updatedBooking = formatBookingRow(rows[0]);
-    notifyBookingStatusUpdated(updatedBooking);
+    const fb = fallbackBookings.find((b) => Number(b.id) === bookingId);
+    if (fb) {
+      fb.room_number = roomNumber;
+      const updated = formatBookingRow(fb);
+      notifyBookingStatusUpdated(updated);
+      return res.json({
+        message: "Room number updated successfully.",
+        booking: updated
+      });
+    }
 
-    return res.json({
-      message: "Room number updated successfully.",
-      booking: updatedBooking
-    });
+    return res.status(404).json({ message: "Booking not found." });
   } catch (error) {
     next(error);
   }

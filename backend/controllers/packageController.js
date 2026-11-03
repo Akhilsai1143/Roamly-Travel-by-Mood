@@ -170,7 +170,17 @@ exports.getPublicPackages = async (req, res) => {
   } catch (error) {
     if (isDbConnectionError(error) || error.code === "ER_NO_SUCH_TABLE") {
       let filtered = [...fallbackPackages];
-      const { tier, featured } = req.query;
+      const { tier, featured, destinationId } = req.query;
+      if (destinationId) {
+        const destStr = String(destinationId).trim().toLowerCase();
+        const numId = Number(destStr);
+        filtered = filtered.filter((p) => {
+          if (Number.isInteger(numId) && Number(p.destination_id) === numId) return true;
+          if (String(p.destination_id).toLowerCase() === destStr) return true;
+          if (p.destination_name && p.destination_name.toLowerCase().includes(destStr)) return true;
+          return false;
+        });
+      }
       if (tier && ["standard", "comfort", "premium"].includes(tier.toLowerCase())) {
         filtered = filtered.filter((p) => p.tier === tier.toLowerCase());
       }
